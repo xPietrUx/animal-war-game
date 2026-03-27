@@ -6,11 +6,14 @@ public class SelectionManager : MonoBehaviour
     public Grid grid;               // Przeciągnij tu swój Grid z Hierarchy
     public Animal selectedAnimal;   // Tu gra zapamięta, kogo wybrałeś
 
+    public Tilemap highlightMap;
+    public Tile highlightTile;
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorldPos.z = 0; // Upewniamy się, że z jest 0, bo pracujemy na 2D
             Vector3Int clickedCell = grid.WorldToCell(mouseWorldPos);
 
             Animal clickedAnimal = FindAnimalAtCell(clickedCell);
@@ -25,7 +28,7 @@ public class SelectionManager : MonoBehaviour
             // 2. Jeśli nie kliknąłeś w zwierzę, ale masz kogoś wybranego -> RUSZ SIĘ
             else if (selectedAnimal != null)
             {
-                selectedAnimal.MoveTo(clickedCell, grid);
+                selectedAnimal.MoveTo(clickedCell);
                 highlightMap.ClearAllTiles(); // Czyścimy po ruchu
                 selectedAnimal = null;        // Opcjonalnie: odznaczamy jednostkę
             }
@@ -43,8 +46,8 @@ public class SelectionManager : MonoBehaviour
         return null;
     }
 
-    public Tilemap highlightMap; // Przeciągnij tu nową mapę w Inspektorze
-    public Tile highlightTile;   // Wybierz dowolny kafel (np. zwykły biały kwadrat)
+    //public Tilemap highlightMap; // Przeciągnij tu nową mapę w Inspektorze
+    //public Tile highlightTile;   // Wybierz dowolny kafel (np. zwykły biały kwadrat)
 
     public void ShowMoveRange(Animal animal)
     {
@@ -58,8 +61,17 @@ public class SelectionManager : MonoBehaviour
         {
             for (int y = -range; y <= range; y++)
             {
+                int dx = Mathf.Abs(x);
+                int dy = Mathf.Abs(y);
+                int dist = Mathf.Max(dx, dy); // Odległość Czebyszewa
+
                 Vector3Int tilePos = new Vector3Int(startPos.x + x, startPos.y + y, 0);
-                highlightMap.SetTile(tilePos, highlightTile);
+
+                // NOWOŚĆ: Podświetlamy tylko, jeśli pole jest w zasięgu ORAZ nie ma na nim kamienia/zwierzęcia
+                if (dist <= range && GridManager.Instance.IsTileWalkable(tilePos))
+                {
+                    highlightMap.SetTile(tilePos, highlightTile);
+                }
             }
         }
     }

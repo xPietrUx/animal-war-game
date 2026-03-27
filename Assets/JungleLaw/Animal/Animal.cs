@@ -5,11 +5,15 @@ public class Animal : MonoBehaviour
     public AnimalData data; // Tu wrzucisz plik z punktu 1
     public Vector3Int gridPosition; // Gdzie kwiatek jest na siatce
 
+    private Grid mainGrid;
     void Start()
     {
-        // Znajduje grid na scenie i ustawia postać idealnie w kratce na starcie
-        Grid mainGrid = FindFirstObjectByType<Grid>();
+        // Teraz przypisujemy wynik prosto do naszej głównej zmiennej
+        mainGrid = FindFirstObjectByType<Grid>();
         SnapToGrid(mainGrid);
+
+        // Postać pojawia się na planszy i od razu rezerwuje swoje pole
+        GridManager.Instance.OccupyTile(gridPosition, this);
     }
 
     // Funkcja przyciągająca do środka kafelka
@@ -21,7 +25,8 @@ public class Animal : MonoBehaviour
         transform.position = grid.GetCellCenterWorld(gridPosition);
     }
 
-    public void MoveTo(Vector3Int targetCell, Grid grid)
+    // Usunęliśmy argument "Grid grid", bo zwierzę już go pamięta z funkcji Start()
+    public void MoveTo(Vector3Int targetCell)
     {
         int dx = Mathf.Abs(targetCell.x - gridPosition.x);
         int dy = Mathf.Abs(targetCell.y - gridPosition.y);
@@ -29,10 +34,15 @@ public class Animal : MonoBehaviour
         // Odległość Czebyszewa: wybiera większą z dwóch różnic
         int dist = Mathf.Max(dx, dy);
 
-        if (dist <= data.moveRange)
+        // Pytamy GridManager, czy docelowe pole jest puste (IsTileWalkable)
+        if (dist <= data.moveRange && GridManager.Instance.IsTileWalkable(targetCell))
         {
+            GridManager.Instance.LeaveTile(gridPosition); // Zwalniamy stare pole
+
             gridPosition = targetCell;
-            transform.position = grid.GetCellCenterWorld(gridPosition);
+            transform.position = mainGrid.GetCellCenterWorld(gridPosition); // Przesuwamy się
+
+            GridManager.Instance.OccupyTile(gridPosition, this); // Zajmujemy nowe pole
         }
     }
 }
