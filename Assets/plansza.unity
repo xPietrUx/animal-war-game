@@ -415,7 +415,7 @@ MonoBehaviour:
   grid: {fileID: 1314817925}
   selectedAnimal: {fileID: 0}
   highlightMap: {fileID: 203206073}
-  highlightTile: {fileID: 0}
+  highlightTile: {fileID: 11400000, guid: ab9b699ab453efe43b261c722a36901f, type: 2}
 --- !u!4 &395545852
 Transform:
   m_ObjectHideFlags: 0
