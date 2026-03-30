@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dd91f4d3a0ee224ca2eb06d2ab35140, type: 3}
   m_Name: Capybara_Data
   m_EditorClassIdentifier: Assembly-CSharp::AnimalData
-  speciesName: 
+  speciesName: Kapibara
   moveRange: 1
   attackRange: 3
   maxHP: 75
