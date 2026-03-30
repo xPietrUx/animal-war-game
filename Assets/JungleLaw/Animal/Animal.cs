@@ -30,19 +30,17 @@ public class Animal : MonoBehaviour
     {
         int dx = Mathf.Abs(targetCell.x - gridPosition.x);
         int dy = Mathf.Abs(targetCell.y - gridPosition.y);
+        int dist = dx + dy;
 
-        // Odległość Czebyszewa: wybiera większą z dwóch różnic
-        int dist = Mathf.Max(dx, dy);
-
-        // Pytamy GridManager, czy docelowe pole jest puste (IsTileWalkable)
-        if (dist <= data.moveRange && GridManager.Instance.IsTileWalkable(targetCell))
+        if (dist <= data.moveRange)
         {
-            GridManager.Instance.LeaveTile(gridPosition); // Zwalniamy stare pole
+            // Upewnij siê, ¿e nazwa zgadza siê z GridManager (LeaveTile)
+            GridManager.Instance.LeaveTile(gridPosition);
 
             gridPosition = targetCell;
-            transform.position = mainGrid.GetCellCenterWorld(gridPosition); // Przesuwamy się
+            transform.position = mainGrid.GetCellCenterWorld(gridPosition);
 
-            GridManager.Instance.OccupyTile(gridPosition, this); // Zajmujemy nowe pole
+            GridManager.Instance.OccupyTile(gridPosition, this);
         }
     }
 }
