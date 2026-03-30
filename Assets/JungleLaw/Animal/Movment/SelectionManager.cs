@@ -3,39 +3,81 @@ using UnityEngine.Tilemaps;
 
 public class SelectionManager : MonoBehaviour
 {
-    public Grid grid;               // Przeciągnij tu swój Grid z Hierarchy
-    public Animal selectedAnimal;   // Tu gra zapamięta, kogo wybrałeś
-
+    public Grid grid;
+    public Animal selectedAnimal;
     public Tilemap highlightMap;
     public Tile highlightTile;
+
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
             Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mouseWorldPos.z = 0; // Upewniamy się, że z jest 0, bo pracujemy na 2D
+            mouseWorldPos.z = 0;
             Vector3Int clickedCell = grid.WorldToCell(mouseWorldPos);
 
             Animal clickedAnimal = FindAnimalAtCell(clickedCell);
 
-            // 1. Jeśli kliknąłeś w zwierzę -> WYBIERZ I POKAŻ ZASIĘG
+            // 1. Wybór nowej jednostki
             if (clickedAnimal != null)
             {
                 selectedAnimal = clickedAnimal;
                 ShowMoveRange(selectedAnimal);
                 Debug.Log("Wybrano: " + selectedAnimal.data.speciesName);
             }
-            // 2. Jeśli nie kliknąłeś w zwierzę, ale masz kogoś wybranego -> RUSZ SIĘ
+            // 2. Ruch wybraną jednostką
             else if (selectedAnimal != null)
             {
-                selectedAnimal.MoveTo(clickedCell);
-                highlightMap.ClearAllTiles(); // Czyścimy po ruchu
-                selectedAnimal = null;        // Opcjonalnie: odznaczamy jednostkę
+                // Sprawdzamy czy kliknięte pole jest podświetlone (czyli czy jest w zasięgu)
+                if (highlightMap.HasTile(clickedCell))
+                {
+                    selectedAnimal.MoveTo(clickedCell);
+                    highlightMap.ClearAllTiles();
+                    selectedAnimal = null;
+                }
+                else
+                {
+                    Debug.Log("To pole jest nieosiągalne!");
+                }
             }
         }
     }
 
-    // Prosta funkcja pomocnicza
+    public void ShowMoveRange(Animal animal)
+    {
+        highlightMap.ClearAllTiles();
+        int range = animal.data.moveRange;
+        Vector3Int startPos = animal.gridPosition;
+
+        for (int x = -range; x <= range; x++)
+        {
+            for (int y = -range; y <= range; y++)
+            {
+                int dist = Mathf.Abs(x) + Mathf.Abs(y); // Manhattan
+                Vector3Int tilePos = new Vector3Int(startPos.x + x, startPos.y + y, 0);
+
+                if (dist <= range)
+                {
+                    // NOWY WARUNEK: Pole jest OK, jeśli:
+                    // 1. Jest to pole startowe (animal tu stoi, więc może tu zostać)
+                    // 2. LUB GridManager mówi, że jest wolne
+                    bool isStartTile = (tilePos == startPos);
+
+                    if (isStartTile || GridManager.Instance.IsTileWalkable(tilePos))
+                    {
+                        // Sprawdzamy czy nie stoi tam INNA jednostka
+                        Animal occupant = FindAnimalAtCell(tilePos);
+
+                        if (occupant == null || occupant == animal)
+                        {
+                            highlightMap.SetTile(tilePos, highlightTile);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     Animal FindAnimalAtCell(Vector3Int cell)
     {
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
@@ -44,35 +86,5 @@ public class SelectionManager : MonoBehaviour
             if (a.gridPosition == cell) return a;
         }
         return null;
-    }
-
-    //public Tilemap highlightMap; // Przeciągnij tu nową mapę w Inspektorze
-    //public Tile highlightTile;   // Wybierz dowolny kafel (np. zwykły biały kwadrat)
-
-    public void ShowMoveRange(Animal animal)
-    {
-        highlightMap.ClearAllTiles(); // Czyścimy poprzednie podświetlenie
-
-        int range = animal.data.moveRange;
-        Vector3Int startPos = animal.gridPosition;
-
-        // Pętla sprawdzająca kwadrat wokół jednostki
-        for (int x = -range; x <= range; x++)
-        {
-            for (int y = -range; y <= range; y++)
-            {
-                int dx = Mathf.Abs(x);
-                int dy = Mathf.Abs(y);
-                int dist = Mathf.Max(dx, dy); // Odległość Czebyszewa
-
-                Vector3Int tilePos = new Vector3Int(startPos.x + x, startPos.y + y, 0);
-
-                // NOWOŚĆ: Podświetlamy tylko, jeśli pole jest w zasięgu ORAZ nie ma na nim kamienia/zwierzęcia
-                if (dist <= range && GridManager.Instance.IsTileWalkable(tilePos))
-                {
-                    highlightMap.SetTile(tilePos, highlightTile);
-                }
-            }
-        }
     }
 }

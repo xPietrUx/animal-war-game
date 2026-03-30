@@ -6,8 +6,10 @@ public class GridManager : MonoBehaviour
 {
     public static GridManager Instance; // Singleton, ¿eby inne skrypty mia³y tu ³atwy dostêp
 
+    // Funkcja sprawdzaj¹ca, czy mo¿na wejœæ na dane pole
     [Header("Tilemaps")]
-    public Tilemap obstacleTilemap; // Mapa z kamieniami/drzewami
+    public Tilemap groundTilemap;   // TWOJA NOWOŒÆ: G?ówna mapa z traw?/ziemi?
+    public Tilemap obstacleTilemap; // To ju? masz
 
     // S³ownik pamiêtaj¹cy, kto stoi na danej kratce
     private Dictionary<Vector3Int, Animal> occupiedTiles = new Dictionary<Vector3Int, Animal>();
@@ -18,16 +20,19 @@ public class GridManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    // Funkcja sprawdzaj¹ca, czy mo¿na wejœæ na dane pole
     public bool IsTileWalkable(Vector3Int cellPos)
     {
-        // 1. Czy jest tu narysowany kamieñ/drzewo?
+        // 1. CZY TU W OGÓLE JEST ZIEMIA? (Whitelisting)
+        // Je?li na mapie 'Ground' nie ma ?adnego kafelka, nie pozwól wej??.
+        if (!groundTilemap.HasTile(cellPos)) return false;
+
+        // 2. CZY JEST TU PRZESZKODA? (Blacklisting)
         if (obstacleTilemap.HasTile(cellPos)) return false;
 
-        // 2. Czy stoi tu inne zwierzê?
+        // 3. CZY STOI TU INNE ZWIERZÊ?
         if (occupiedTiles.ContainsKey(cellPos) && occupiedTiles[cellPos] != null) return false;
 
-        return true; // Pole jest puste i wolne
+        return true;
     }
 
     // Funkcja zajmuj¹ca pole (u¿ywana, gdy postaæ na nie wchodzi)
