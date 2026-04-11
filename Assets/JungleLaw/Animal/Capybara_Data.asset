@@ -15,4 +15,15 @@ MonoBehaviour:
   speciesName: Kapibara
   moveRange: 1
   attackRange: 3
-  maxHP: 75
+  maxHP: 65
+  maxAttack: 55
+  idleSprite: {fileID: 404147069695469656, guid: 8b31cf5644772584bbc461e422aba6cb, type: 3}
+  angrySprite: {fileID: 4623657150329608939, guid: 27b65a044fd71ac4cbdfc7c9418d9ae0, type: 3}
+  surpriseSprite: {fileID: -3507386340918729152, guid: 548b370d39b329346ad890801f2b2146, type: 3}
+  deathFrames:
+  - {fileID: -2045877934676292172, guid: 712e4fb9e2e37824297d342a2660ae9b, type: 3}
+  - {fileID: -3555191555850384122, guid: 58821e4b48579874dbe352b35eeea261, type: 3}
+  - {fileID: -5107789254545052545, guid: 0365293a20178624c9a000f92574bb49, type: 3}
+  - {fileID: -3762316849870226316, guid: 77c0ca6054b31b644bd51660a952b1dc, type: 3}
+  - {fileID: -7317939089858395317, guid: a081b19bca5e7f04daa76c1b748d41a0, type: 3}
+  graveSprite: {fileID: -9152214796969299091, guid: ebe5ef5ef3ab10e44a64fa3c641f8e8e, type: 3}

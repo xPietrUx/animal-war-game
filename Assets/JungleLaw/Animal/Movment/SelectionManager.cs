@@ -28,21 +28,24 @@ public class SelectionManager : MonoBehaviour
         // --------------------------------------------------------
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            mouseWorldPos.z = 0;
-            Vector3Int clickedCell = grid.WorldToCell(mouseWorldPos);
+            // POPRAWKA BŁĘDU "OUT OF VIEW FRUSTUM":
+            // Pobieramy pozycję myszki i ustawiamy Z na odległość kamery od świata (zwykle 10f w 2D)
+            Vector3 mousePos = Input.mousePosition;
+            mousePos.z = 10f;
 
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
+            mouseWorldPos.z = 0; // Zerujemy Z, aby idealnie trafić w siatkę 2D
+
+            Vector3Int clickedCell = grid.WorldToCell(mouseWorldPos);
             Animal clickedAnimal = FindAnimalAtCell(clickedCell);
 
             // 1. Kliknięto w jakieś zwierzę
             if (clickedAnimal != null)
             {
-                // Jeśli planujemy atak i klikamy INNE zwierzę -> Uderzamy!
                 if (isAttackMode && selectedAnimal != null && clickedAnimal != selectedAnimal)
                 {
                     TryAttack(selectedAnimal, clickedAnimal);
                 }
-                // Jeśli nie planujemy ataku -> Zwykły wybór postaci
                 else
                 {
                     selectedAnimal = clickedAnimal;
@@ -51,26 +54,20 @@ public class SelectionManager : MonoBehaviour
                     Debug.Log("Wybrano: " + selectedAnimal.data.speciesName);
                 }
             }
-            // 2. Kliknięto w puste pole (bez zwierzęcia)
+            // 2. Kliknięto w puste pole
             else if (selectedAnimal != null)
             {
-                // Jeśli planowaliśmy atak, ale kliknęliśmy w trawę -> Anulujemy atak i wracamy do ruchu
                 if (isAttackMode)
                 {
                     isAttackMode = false;
                     ShowMoveRange(selectedAnimal);
                     Debug.Log("Anulowano atak. Powrót do ruchu.");
                 }
-                // W przeciwnym razie sprawdzamy, czy można tam pójść
                 else if (highlightMap.HasTile(clickedCell))
                 {
                     selectedAnimal.MoveTo(clickedCell);
                     highlightMap.ClearAllTiles();
                     selectedAnimal = null;
-                }
-                else
-                {
-                    Debug.Log("To pole jest nieosiągalne!");
                 }
             }
         }
@@ -139,18 +136,21 @@ public class SelectionManager : MonoBehaviour
         int dy = Mathf.Abs(target.gridPosition.y - attacker.gridPosition.y);
         int dist = dx + dy;
 
-        // Ostateczne sprawdzenie przed uderzeniem
         if (dist <= attacker.data.attackRange)
         {
-            Debug.Log($"BAM! {attacker.data.speciesName} atakuje {target.data.speciesName}!");
+            // 1. Atakujący zmienia minę na złą
+            attacker.PlayAttackAnimation();
+
+            // 2. POBIERAMY OBRAŻENIA Z DANYCH ATAKUJĄCEGO
+            // Zamiast wpisywać "10", bierzemy to, co wpisałaś w AnimalData (maxAttack)
+            int damage = attacker.data.maxAttack;
+
+            // 3. Zadajemy te konkretne obrażenia ofierze
+            target.TakeDamage(damage);
 
             highlightMap.ClearAllTiles();
             selectedAnimal = null;
             isAttackMode = false;
-        }
-        else
-        {
-            Debug.Log("Cel uciekł z zasięgu!");
         }
     }
 

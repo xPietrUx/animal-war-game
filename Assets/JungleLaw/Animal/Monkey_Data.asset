@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd91f4d3a0ee224ca2eb06d2ab35140, type: 3}
+  m_Name: Monkey_Data
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalData
+  speciesName: Monkey
+  moveRange: 2
+  attackRange: 1
+  maxHP: 80
+  maxAttack: 45
+  idleSprite: {fileID: 49658488215790716, guid: b3b4da6619b96354fbbe29e638c5b55f, type: 3}
+  angrySprite: {fileID: 6877727115491103836, guid: c3f10bb8a9b3df94aab17c45f44ee735, type: 3}
+  surpriseSprite: {fileID: 5128857046952055180, guid: 5730092791f663f40b49049efb849a0e, type: 3}
+  deathFrames:
+  - {fileID: 89488094494782407, guid: 44237243533f3d148a1614fd5ed0462e, type: 3}
+  - {fileID: 9024036534897862711, guid: e157d80983e7bbd4abeb15bf796843bf, type: 3}
+  - {fileID: 6906026548857702197, guid: 51647ff0f0de58647a333ecccdf86484, type: 3}
+  graveSprite: {fileID: -9152214796969299091, guid: ebe5ef5ef3ab10e44a64fa3c641f8e8e, type: 3}
