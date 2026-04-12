@@ -12,7 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dd91f4d3a0ee224ca2eb06d2ab35140, type: 3}
   m_Name: Frog_Data
   m_EditorClassIdentifier: Assembly-CSharp::AnimalData
-  speciesName: 
+  speciesName: Frog
   moveRange: 3
-  attackRange: 2
-  maxHP: 90
+  attackRange: 1
+  maxHP: 80
+  maxAttack: 25
+  idleSprite: {fileID: -2594522904319404200, guid: 0b4836f18785df5468dcc255a1419701, type: 3}
+  angrySprite: {fileID: -6411379439452981605, guid: 97263702f6bbc034688a90014e013cb5, type: 3}
+  surpriseSprite: {fileID: -645447253804892615, guid: f26de62dd50cc8c4ab7ca738dfcdd1fe, type: 3}
+  deathFrames:
+  - {fileID: 7319678003696800523, guid: 8ce7479270344fb47b64c58ac5ea50dc, type: 3}
+  - {fileID: 6509513945672589281, guid: 6677e9c5e8425ca45b6926f2252f7f75, type: 3}
+  - {fileID: -2273477956335115164, guid: a047183902e1c8240aa297eef412357f, type: 3}
+  - {fileID: 4984887668245070048, guid: d3992da9f2d54834bac198a0c874dd27, type: 3}
+  graveSprite: {fileID: -9152214796969299091, guid: ebe5ef5ef3ab10e44a64fa3c641f8e8e, type: 3}
