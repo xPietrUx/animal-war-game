@@ -87,8 +87,10 @@ public class Animal : MonoBehaviour
 
     private void Die()
     {
-        GridManager.Instance.LeaveTile(gridPosition);
-        StopAllCoroutines(); // Zatrzymuje powrót do "Idle" z TakeDamage
+        // 1. ZATRZYMUJEMY inne procesy (np. zmianę miny na Surprise)
+        StopAllCoroutines();
+        isDead = true;
+
         StartCoroutine(DeathSequenceRoutine());
     }
 
@@ -117,7 +119,7 @@ public class Animal : MonoBehaviour
     {
         Debug.Log("Rozpoczynam animację śmierci...");
 
-        // 1. Pętla przez klatki animacji
+        // 1. Animacja upadku
         if (data.deathFrames != null && data.deathFrames.Length > 0)
         {
             foreach (Sprite frame in data.deathFrames)
@@ -127,18 +129,27 @@ public class Animal : MonoBehaviour
             }
         }
 
-        // 2. Pauza na ostatniej klatce (postać leży)
-        yield return new WaitForSeconds(1.0f);
+        yield return new WaitForSeconds(0.5f);
 
-        // 3. Zamiana w nagrobek
+        // 2. Zamiana w nagrobek
         if (data.graveSprite != null)
         {
             spriteRenderer.sprite = data.graveSprite;
-            spriteRenderer.sortingOrder = -1; // Nagrobek pod spodem innych jednostek
         }
 
-        // 4. Wyłączenie skryptu
+        // 3. Wyłączamy skrypt Animal
+        // To sprawi, że nagrobek nie będzie reagował na kliknięcia i nie będzie mógł atakować
         this.enabled = false;
-        Debug.Log("Nagrobek ustawiony.");
+
+        // 4. Nagrobek stoi i blokuje przejście przez 10 sekund
+        yield return new WaitForSeconds(10.0f);
+
+        // 5. DOPIERO TERAZ zwalniamy pole w GridManagerze
+        // Robimy to tuż przed zniknięciem, żeby inni mogli wejść na to miejsce
+        GridManager.Instance.LeaveTile(gridPosition);
+
+        // 6. Usunięcie obiektu
+        Destroy(gameObject);
+        Debug.Log("Nagrobek zniknął, pole jest wolne.");
     }
 }

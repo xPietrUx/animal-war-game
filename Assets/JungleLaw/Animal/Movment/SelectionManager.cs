@@ -39,9 +39,9 @@ public class SelectionManager : MonoBehaviour
             Vector3Int clickedCell = grid.WorldToCell(mouseWorldPos);
             Animal clickedAnimal = FindAnimalAtCell(clickedCell);
 
-            // 1. Kliknięto w jakieś zwierzę
             if (clickedAnimal != null)
             {
+                // Logika ataku lub wyboru (to masz dobrze)
                 if (isAttackMode && selectedAnimal != null && clickedAnimal != selectedAnimal)
                 {
                     TryAttack(selectedAnimal, clickedAnimal);
@@ -54,20 +54,36 @@ public class SelectionManager : MonoBehaviour
                     Debug.Log("Wybrano: " + selectedAnimal.data.speciesName);
                 }
             }
-            // 2. Kliknięto w puste pole
-            else if (selectedAnimal != null)
+            else
             {
-                if (isAttackMode)
+                // 2. Kliknięto w POLE BEZ ŻYWEGO ZWIERZĘCIA (pusta trawa LUB nagrobek)
+
+                // Sprawdzamy, czy pod myszką jest nagrobek (martwe zwierzę)
+                // Musimy stworzyć pomocniczą funkcję FindAnyObjectAtCell, 
+                // która widzi nawet te z wyłączonym skryptem.
+                bool isGraveHere = CheckIfGraveAtCell(clickedCell);
+
+                if (selectedAnimal != null)
                 {
-                    isAttackMode = false;
-                    ShowMoveRange(selectedAnimal);
-                    Debug.Log("Anulowano atak. Powrót do ruchu.");
-                }
-                else if (highlightMap.HasTile(clickedCell))
-                {
-                    selectedAnimal.MoveTo(clickedCell);
-                    highlightMap.ClearAllTiles();
-                    selectedAnimal = null;
+                    if (isAttackMode)
+                    {
+                        // Jeśli kliknęliśmy w nagrobek lub trawę w trybie ataku -> anuluj
+                        isAttackMode = false;
+                        ShowMoveRange(selectedAnimal);
+                        Debug.Log("Anulowano atak.");
+                    }
+                    else if (!isGraveHere && highlightMap.HasTile(clickedCell))
+                    {
+                        // MOŻEMY IŚĆ tylko jeśli NIE MA tam nagrobka i kafel jest podświetlony
+                        selectedAnimal.MoveTo(clickedCell);
+                        highlightMap.ClearAllTiles();
+                        selectedAnimal = null;
+                    }
+                    else if (isGraveHere)
+                    {
+                        Debug.Log("Tu stoi nagrobek, nie przejdziesz!");
+                        // Opcjonalnie: highlightMap.ClearAllTiles(); selectedAnimal = null;
+                    }
                 }
             }
         }
@@ -116,7 +132,7 @@ public class SelectionManager : MonoBehaviour
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal target in allAnimals)
         {
-            if (target == attacker) continue; // Ignorujemy samego siebie
+            if (target == attacker || !target.enabled) continue; // Ignorujemy samego siebie i nagrobek
 
             int dx = Mathf.Abs(target.gridPosition.x - attacker.gridPosition.x);
             int dy = Mathf.Abs(target.gridPosition.y - attacker.gridPosition.y);
@@ -132,6 +148,8 @@ public class SelectionManager : MonoBehaviour
 
     public void TryAttack(Animal attacker, Animal target)
     {
+        if (target == null || !target.enabled) return;
+
         int dx = Mathf.Abs(target.gridPosition.x - attacker.gridPosition.x);
         int dy = Mathf.Abs(target.gridPosition.y - attacker.gridPosition.y);
         int dist = dx + dy;
@@ -156,11 +174,26 @@ public class SelectionManager : MonoBehaviour
 
     Animal FindAnimalAtCell(Vector3Int cell)
     {
+        // Szukamy wszystkich zwierząt na scenie
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal a in allAnimals)
         {
-            if (a.gridPosition == cell) return a;
+            if (a.gridPosition == cell && a.enabled)
+            {
+                return a;
+            }
         }
         return null;
+    }
+
+    bool CheckIfGraveAtCell(Vector3Int cell)
+    {
+        Animal[] allObjects = Object.FindObjectsByType<Animal>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        foreach (Animal a in allObjects)
+        {
+            // Jeśli pozycja się zgadza, ale skrypt jest WYŁĄCZONY, to znaczy że to grób
+            if (a.gridPosition == cell && !a.enabled) return true;
+        }
+        return false;
     }
 }
