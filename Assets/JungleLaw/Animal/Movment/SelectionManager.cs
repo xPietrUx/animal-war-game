@@ -14,76 +14,71 @@ public class SelectionManager : MonoBehaviour
     void Update()
     {
         // --------------------------------------------------------
-        // PRAWY PRZYCISK MYSZY (PPM) - Przełącz na Tryb Ataku
+        // PPM - Przełącz na Tryb Ataku (Tylko jeśli to Twoja tura!)
         // --------------------------------------------------------
         if (Input.GetMouseButtonDown(1) && selectedAnimal != null)
         {
-            isAttackMode = true;
-            ShowAttackTargets(selectedAnimal);
-            Debug.Log("Tryb Ataku! Wybierz cel.");
+            // Sprawdzamy, czy jednostka nie wykonała już akcji
+            if (!selectedAnimal.hasMoved)
+            {
+                isAttackMode = true;
+                ShowAttackTargets(selectedAnimal);
+                Debug.Log("Tryb Ataku! Wybierz cel.");
+            }
         }
 
         // --------------------------------------------------------
-        // LEWY PRZYCISK MYSZY (LPM) - Wybór / Ruch / Wykonanie Ataku
+        // LPM - Wybór / Ruch / Atak
         // --------------------------------------------------------
         if (Input.GetMouseButtonDown(0))
         {
-            // POPRAWKA BŁĘDU "OUT OF VIEW FRUSTUM":
-            // Pobieramy pozycję myszki i ustawiamy Z na odległość kamery od świata (zwykle 10f w 2D)
-            Vector3 mousePos = Input.mousePosition;
-            mousePos.z = 10f;
-
-            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
-            mouseWorldPos.z = 0; // Zerujemy Z, aby idealnie trafić w siatkę 2D
-
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorldPos.z = 0;
             Vector3Int clickedCell = grid.WorldToCell(mouseWorldPos);
+
             Animal clickedAnimal = FindAnimalAtCell(clickedCell);
 
+            // 1. Kliknięto w zwierzę
             if (clickedAnimal != null)
             {
-                // Logika ataku lub wyboru (to masz dobrze)
-                if (isAttackMode && selectedAnimal != null && clickedAnimal != selectedAnimal)
+                // ATAK: Jeśli tryb ataku aktywny i klikamy wroga
+                if (isAttackMode && clickedAnimal.team != selectedAnimal.team)
                 {
                     TryAttack(selectedAnimal, clickedAnimal);
                 }
+                // WYBÓR: Sprawdzamy czy to nasza jednostka i czy ma jeszcze ruch
                 else
                 {
-                    selectedAnimal = clickedAnimal;
-                    isAttackMode = false;
-                    ShowMoveRange(selectedAnimal);
-                    Debug.Log("Wybrano: " + selectedAnimal.data.speciesName);
-                }
-            }
-            else
-            {
-                // 2. Kliknięto w POLE BEZ ŻYWEGO ZWIERZĘCIA (pusta trawa LUB nagrobek)
+                    int currentTurnTeam = (int)TurnManager.Instance.currentTurn + 1;
 
-                // Sprawdzamy, czy pod myszką jest nagrobek (martwe zwierzę)
-                // Musimy stworzyć pomocniczą funkcję FindAnyObjectAtCell, 
-                // która widzi nawet te z wyłączonym skryptem.
-                bool isGraveHere = CheckIfGraveAtCell(clickedCell);
-
-                if (selectedAnimal != null)
-                {
-                    if (isAttackMode)
+                    if (clickedAnimal.team == currentTurnTeam && !clickedAnimal.hasMoved)
                     {
-                        // Jeśli kliknęliśmy w nagrobek lub trawę w trybie ataku -> anuluj
+                        selectedAnimal = clickedAnimal;
                         isAttackMode = false;
                         ShowMoveRange(selectedAnimal);
-                        Debug.Log("Anulowano atak.");
                     }
-                    else if (!isGraveHere && highlightMap.HasTile(clickedCell))
+                    else
                     {
-                        // MOŻEMY IŚĆ tylko jeśli NIE MA tam nagrobka i kafel jest podświetlony
-                        selectedAnimal.MoveTo(clickedCell);
-                        highlightMap.ClearAllTiles();
-                        selectedAnimal = null;
+                        Debug.Log("To nie Twoja tura lub jednostka już się ruszyła!");
                     }
-                    else if (isGraveHere)
-                    {
-                        Debug.Log("Tu stoi nagrobek, nie przejdziesz!");
-                        // Opcjonalnie: highlightMap.ClearAllTiles(); selectedAnimal = null;
-                    }
+                }
+            }
+            // 2. Kliknięto w puste pole
+            else if (selectedAnimal != null)
+            {
+                if (isAttackMode)
+                {
+                    isAttackMode = false;
+                    ShowMoveRange(selectedAnimal);
+                }
+                else if (highlightMap.HasTile(clickedCell))
+                {
+                    selectedAnimal.MoveTo(clickedCell);
+                    // NOWOŚĆ: Po ruchu jednostka kończy swoją aktywność w tej turze
+                    selectedAnimal.FinishAction();
+
+                    highlightMap.ClearAllTiles();
+                    selectedAnimal = null;
                 }
             }
         }
@@ -148,23 +143,16 @@ public class SelectionManager : MonoBehaviour
 
     public void TryAttack(Animal attacker, Animal target)
     {
-        if (target == null || !target.enabled) return;
-
         int dx = Mathf.Abs(target.gridPosition.x - attacker.gridPosition.x);
         int dy = Mathf.Abs(target.gridPosition.y - attacker.gridPosition.y);
         int dist = dx + dy;
 
         if (dist <= attacker.data.attackRange)
         {
-            // 1. Atakujący zmienia minę na złą
-            attacker.PlayAttackAnimation();
+            Debug.Log($"BAM! {attacker.data.speciesName} atakuje {target.data.speciesName}!");
 
-            // 2. POBIERAMY OBRAŻENIA Z DANYCH ATAKUJĄCEGO
-            // Zamiast wpisywać "10", bierzemy to, co wpisałaś w AnimalData (maxAttack)
-            int damage = attacker.data.maxAttack;
-
-            // 3. Zadajemy te konkretne obrażenia ofierze
-            target.TakeDamage(damage);
+            // Po ataku jednostka również kończy turę
+            attacker.FinishAction();
 
             highlightMap.ClearAllTiles();
             selectedAnimal = null;
