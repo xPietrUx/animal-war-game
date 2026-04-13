@@ -13,6 +13,24 @@ public class Animal : MonoBehaviour
     private Grid mainGrid;
     private SpriteRenderer spriteRenderer;
     private bool isDead = false; // Zabezpieczenie przed "miganiem" animacji
+    public int team; // 1 dla Player 1, 2 dla Player 2
+    public bool hasMoved = false; // Czy jednostka już wykonała akcję?
+
+    // Wywołaj to w MoveTo() po udanym ruchu
+    public void FinishAction()
+    {
+        hasMoved = true;
+        // Opcjonalnie: "Poszarzenie" grafiki, by gracz widział, że jednostka odpoczywa
+        GetComponent<SpriteRenderer>().color = Color.gray;
+    }
+
+    public void ResetTurn()
+    {
+        hasMoved = false;
+        // Przywracamy kolor, aby gracz widział, że jednostka znów "żyje"
+        GetComponent<SpriteRenderer>().color = Color.white;
+        Debug.Log($"{data.speciesName} jest gotowy do nowej tury.");
+    }
 
     void Awake()
     {
@@ -29,6 +47,7 @@ public class Animal : MonoBehaviour
 
         SnapToGrid(mainGrid);
         GridManager.Instance.OccupyTile(gridPosition, this);
+        hasMoved = false;
     }
 
     public void SnapToGrid(Grid grid)
@@ -110,6 +129,15 @@ public class Animal : MonoBehaviour
             gridPosition = targetCell;
             transform.position = mainGrid.GetCellCenterWorld(gridPosition);
             GridManager.Instance.OccupyTile(gridPosition, this);
+        }
+        CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
+        foreach (CapturePoint point in allPoints)
+        {
+            if (point.gridPosition == this.gridPosition)
+            {
+                point.Capture(this.team); // Wbijamy flagę naszej drużyny!
+                break;
+            }
         }
     }
 
