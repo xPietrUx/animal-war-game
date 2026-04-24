@@ -184,7 +184,7 @@ MonoBehaviour:
   gridPosition: {x: 0, y: 0, z: 0}
   currentHP: 0
   hpEffectPrefab: {fileID: 615148492463368322, guid: 4b76ea264db55834bb7781c8e9f8874b, type: 3}
-  healthBarFill: {fileID: 0}
+  healthBarFill: {fileID: 2488970510010546088}
   team: 1
   hasMoved: 0
 --- !u!1 &5906280875381983485
