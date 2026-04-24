@@ -151,6 +151,10 @@ public class SelectionManager : MonoBehaviour
         {
             Debug.Log($"BAM! {attacker.data.speciesName} atakuje {target.data.speciesName}!");
 
+            // FAKTYCZNE ZADAWANIE OBRAŻEŃ
+            // Bierzemy maxAttack atakującego i przekazujemy do TakeDamage celu
+            target.TakeDamage(attacker.data.maxAttack);
+
             // Po ataku jednostka również kończy turę
             attacker.FinishAction();
 
