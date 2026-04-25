@@ -6,6 +6,7 @@ public class AnimalData : ScriptableObject
     public string speciesName;
     public int moveRange;
     public int attackRange;
+    public int visionRange;
     public int maxHP;
     public int maxAttack;
 

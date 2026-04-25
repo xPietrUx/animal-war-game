@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Frog
   moveRange: 3
   attackRange: 1
+  visionRange: 2
   maxHP: 80
   maxAttack: 25
   idleSprite: {fileID: -2594522904319404200, guid: 0b4836f18785df5468dcc255a1419701, type: 3}

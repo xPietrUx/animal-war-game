@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Kapibara
   moveRange: 1
   attackRange: 3
+  visionRange: 2
   maxHP: 65
   maxAttack: 55
   idleSprite: {fileID: 404147069695469656, guid: 8b31cf5644772584bbc461e422aba6cb, type: 3}

@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Rabbit
   moveRange: 3
   attackRange: 1
+  visionRange: 6
   maxHP: 50
   maxAttack: 65
   idleSprite: {fileID: -5362292703166988329, guid: 7dbab09524da86745b91812796c2cb03, type: 3}

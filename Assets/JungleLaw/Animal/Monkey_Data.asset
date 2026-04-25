@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Monkey
   moveRange: 2
   attackRange: 1
+  visionRange: 5
   maxHP: 80
   maxAttack: 45
   idleSprite: {fileID: 49658488215790716, guid: b3b4da6619b96354fbbe29e638c5b55f, type: 3}

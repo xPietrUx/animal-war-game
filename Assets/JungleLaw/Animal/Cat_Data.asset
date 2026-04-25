@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Cat
   moveRange: 2
   attackRange: 2
+  visionRange: 4
   maxHP: 150
   maxAttack: 15
   idleSprite: {fileID: 2901277398537777461, guid: b14b0f0be9bc13545968b2587d4d391b, type: 3}
