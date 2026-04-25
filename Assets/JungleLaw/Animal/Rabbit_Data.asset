@@ -17,6 +17,8 @@ MonoBehaviour:
   attackRange: 1
   maxHP: 50
   maxAttack: 65
+  cost: 80
+  manaCost: 10
   idleSprite: {fileID: -5362292703166988329, guid: 7dbab09524da86745b91812796c2cb03, type: 3}
   angrySprite: {fileID: -2847090396340221084, guid: 25751e1b227c5ee4d9f7db62ca5740f3, type: 3}
   surpriseSprite: {fileID: -3298776346213109211, guid: 3ae34e81fd5296f4d985d33b67c6694d, type: 3}

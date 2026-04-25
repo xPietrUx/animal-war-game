@@ -8,6 +8,8 @@ public class AnimalData : ScriptableObject
     public int attackRange;
     public int maxHP;
     public int maxAttack;
+    public int cost;
+    public int manaCost;
 
     [Header("Grafiki Emocji")]
     public Sprite idleSprite;

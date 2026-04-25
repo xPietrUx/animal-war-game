@@ -21,40 +21,78 @@ public class RecruitmentManager : MonoBehaviour
     // Funkcja odpalana przez szare przyciski w UI
     public void BuyUnit(int unitID)
     {
-        int cost = 0;
         GameObject prefabToSpawn = null;
 
-        // 1. Sprawdzamy co gracz chce kupić
-        if (unitID == 1) { cost = 40; prefabToSpawn = unit1Prefab; }
-        else if (unitID == 2) { cost = 60; prefabToSpawn = unit2Prefab; }
-        else if (unitID == 3) { cost = 100; prefabToSpawn = unit3Prefab; }
-        else if (unitID == 4) { cost = 50; prefabToSpawn = unit4Prefab; }
-        else if (unitID == 5) { cost = 70; prefabToSpawn = unit5Prefab; }
-        else if (unitID == 6) { cost = 80; prefabToSpawn = unit6Prefab; }
+        // 1. Sprawdzamy co gracz chce kupić (TYLKO przypisujemy prefab, bez cen!)
+        if (unitID == 1) { prefabToSpawn = unit1Prefab; }
+        else if (unitID == 2) { prefabToSpawn = unit2Prefab; }
+        else if (unitID == 3) { prefabToSpawn = unit3Prefab; }
+        else if (unitID == 4) { prefabToSpawn = unit4Prefab; }
+        else if (unitID == 5) { prefabToSpawn = unit5Prefab; }
+        else if (unitID == 6) { prefabToSpawn = unit6Prefab; }
 
-        // 2. KTO KUPUJE? Player 1
+        // Pobieramy koszty bezpośrednio z wybranego Prefabu
+        int goldCost = prefabToSpawn.GetComponent<Animal>().data.cost;
+        int manaCost = prefabToSpawn.GetComponent<Animal>().data.manaCost;
+
+        // KTO KUPUJE? Player 1
         if (TurnManager.Instance.currentTurn == TurnManager.TurnState.Player1)
         {
-            // Czy stać go ORAZ czy punkt spawnu jest pusty?
-            if (TurnManager.Instance.p1_Gold >= cost && GridManager.Instance.IsTileWalkable(p1SpawnPoint))
+            // Sprawdzamy czy mamy wystarczająco OBU zasobów
+            if (TurnManager.Instance.p1_Gold >= goldCost && TurnManager.Instance.p1_Mana >= manaCost && GridManager.Instance.IsTileWalkable(p1SpawnPoint))
             {
-                TurnManager.Instance.p1_Gold -= cost; // Pobieramy opłatę
+                TurnManager.Instance.p1_Gold -= goldCost;
+                TurnManager.Instance.p1_Mana -= manaCost;
+
                 SpawnUnit(prefabToSpawn, p1SpawnPoint, 1);
-                UIManager.Instance.UpdateTurnInfo(TurnManager.Instance.currentTurn.ToString(), TurnManager.Instance.p1_Gold);
+                UIManager.Instance.UpdateTurnInfo("PLAYER 1", TurnManager.Instance.p1_Gold, TurnManager.Instance.currentGoldIncome, TurnManager.Instance.p1_Mana, TurnManager.Instance.currentManaIncome);
             }
-            else Debug.LogWarning("Za mało złota lub punkt spawnu jest zablokowany!");
+            else Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
         }
-        // 3. KTO KUPUJE? Player 2
+        // KTO KUPUJE? Player 2
         else if (TurnManager.Instance.currentTurn == TurnManager.TurnState.Player2)
         {
-            if (TurnManager.Instance.p2_Gold >= cost && GridManager.Instance.IsTileWalkable(p2SpawnPoint))
+            if (TurnManager.Instance.p2_Gold >= goldCost && TurnManager.Instance.p2_Mana >= manaCost && GridManager.Instance.IsTileWalkable(p2SpawnPoint))
             {
-                TurnManager.Instance.p2_Gold -= cost;
+                TurnManager.Instance.p2_Gold -= goldCost;
+                TurnManager.Instance.p2_Mana -= manaCost;
+
                 SpawnUnit(prefabToSpawn, p2SpawnPoint, 2);
-                UIManager.Instance.UpdateTurnInfo(TurnManager.Instance.currentTurn.ToString(), TurnManager.Instance.p2_Gold);
+                UIManager.Instance.UpdateTurnInfo("PLAYER 2", TurnManager.Instance.p2_Gold, TurnManager.Instance.currentGoldIncome, TurnManager.Instance.p2_Mana, TurnManager.Instance.currentManaIncome);
             }
-            else Debug.LogWarning("Za mało złota lub punkt spawnu jest zablokowany!");
+            else Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
         }
+    }
+
+    // Funkcja wywoływana przy NAJECHANIU (Pointer Enter)
+    public void HoverUnit(int unitID)
+    {
+        GameObject hoveredPrefab = null;
+
+        // Szukamy, o którym prefabie mowa
+        if (unitID == 1) hoveredPrefab = unit1Prefab;
+        else if (unitID == 2) hoveredPrefab = unit2Prefab;
+        else if (unitID == 3) hoveredPrefab = unit3Prefab;
+        else if (unitID == 4) hoveredPrefab = unit4Prefab;
+        else if (unitID == 5) hoveredPrefab = unit5Prefab;
+        else if (unitID == 6) hoveredPrefab = unit6Prefab;
+
+        if (hoveredPrefab != null)
+        {
+            // Pobieramy prawdziwe ceny prosto z karty postaci (AnimalData)
+            int gCost = hoveredPrefab.GetComponent<Animal>().data.cost;
+            int mCost = hoveredPrefab.GetComponent<Animal>().data.manaCost;
+
+            // Wysyłamy do UI!
+            UIManager.Instance.UpdateHoverCosts(gCost.ToString(), mCost.ToString());
+        }
+    }
+
+    // Funkcja wywoływana przy ZJECHANIU MYSZKĄ (Pointer Exit)
+    public void ClearHover()
+    {
+        // Zmieniamy teksty na zera lub puste kreski
+        UIManager.Instance.UpdateHoverCosts("0", "0");
     }
 
     // Funkcja budująca fizyczny obiekt na mapie

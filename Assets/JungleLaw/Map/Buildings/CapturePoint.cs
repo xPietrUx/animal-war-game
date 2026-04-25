@@ -4,7 +4,9 @@ public class CapturePoint : MonoBehaviour
 {
     public Vector3Int gridPosition;
     public int ownerTeam = 0; // 0 = Neutralny, 1 = Player 1, 2 = Player 2
-    public int goldPerTurn = 20; // Ile złota daje co turę
+    [Header("Ekonomia")]
+    public int goldPerTurn = 20;
+    public int manaPerTurn = 1;
     public bool isAttackPoint = true; // Czy ten punkt bije bazę?
     public int damagePerTurn = 5;
 
