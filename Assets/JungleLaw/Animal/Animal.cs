@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class Animal : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class Animal : MonoBehaviour
 
     [Header("Efekty")]
     public GameObject hpEffectPrefab; // Przeciągnij tu prefab -hp
+    [Header("UI")]
+    public Image healthBarFill;
 
     private Grid mainGrid;
     private SpriteRenderer spriteRenderer;
@@ -48,6 +51,8 @@ public class Animal : MonoBehaviour
         SnapToGrid(mainGrid);
         GridManager.Instance.OccupyTile(gridPosition, this);
         hasMoved = false;
+        UpdateHealthBar();
+        UpdateAllegianceColor();
     }
 
     public void SnapToGrid(Grid grid)
@@ -71,6 +76,7 @@ public class Animal : MonoBehaviour
         if (isDead) return; // Jeśli już umiera, nie przyjmuj więcej obrażeń
 
         currentHP -= amount;
+        UpdateHealthBar();
         Debug.Log($"{data.speciesName} oberwał za {amount}. Zostało HP: {currentHP}");
 
         // 1. Spawnowanie ikonki -hp nad głową
@@ -179,5 +185,35 @@ public class Animal : MonoBehaviour
         // 6. Usunięcie obiektu
         Destroy(gameObject);
         Debug.Log("Nagrobek zniknął, pole jest wolne.");
+    }
+
+    private void UpdateHealthBar()
+    {
+        if (healthBarFill != null)
+        {
+            // Rzutujemy (float), żeby wynik nie zaokrąglił się do 0 (np. 50/100 to 0.5)
+            healthBarFill.fillAmount = (float)currentHP / data.maxHP;
+        }
+    }
+
+    // Funkcja zmieniająca kolor paska w zależności od tury
+    public void UpdateAllegianceColor()
+    {
+        if (healthBarFill != null)
+        {
+            // Przypomnienie: TurnState.Player1 to 0 (więc +1 daje nam Team 1)
+            int currentTurnTeam = (int)TurnManager.Instance.currentTurn + 1;
+
+            if (this.team == currentTurnTeam)
+            {
+                // To jest moja tura - pasek jest zielony
+                healthBarFill.color = Color.green;
+            }
+            else
+            {
+                // To tura przeciwnika - pasek jest czerwony
+                healthBarFill.color = Color.red;
+            }
+        }
     }
 }

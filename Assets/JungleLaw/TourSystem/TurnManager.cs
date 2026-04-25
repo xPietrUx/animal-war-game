@@ -25,6 +25,7 @@ public class TurnManager : MonoBehaviour
     {
         currentTurn = TurnState.Player1;
         StartTurn();
+
     }
 
     public void EndTurn()
@@ -40,11 +41,12 @@ public class TurnManager : MonoBehaviour
 
     private void StartTurn()
     {
-        // 1. ZRESETUJ JEDNOSTKI
+        // 1. ZRESETUJ JEDNOSTKI I ZAKTUALIZUJ ICH KOLORY
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal a in allAnimals)
         {
             a.ResetTurn();
+            a.UpdateAllegianceColor(); // NOWOŚĆ: Każdej jednostce każemy przemyśleć swój kolor!
         }
 
         // 2. ZBIERZ ZŁOTO Z PRZEJĘTYCH PUNKTÓW
