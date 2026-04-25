@@ -2,25 +2,61 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public float moveSpeed = 10f; // Prêdkoœæ poruszania
-    public float zoomSpeed = 5f;  // Prêdkoœæ przybli¿ania
+    [Header("Ruch i Zoom")]
+    public float moveSpeed = 10f;
+    public float zoomSpeed = 5f;
+
+    [Header("Limity Zoomu")]
+    public float minZoom = 3f;  // Maksymalne przybliżenie (niska wartość = blisko)
+    public float maxZoom = 10f; // Maksymalne oddalenie (wysoka wartość = daleko)
+
+    [Header("Granice Mapy")]
+    public Vector2 minBounds; // Np. lewy dolny róg mapy (np. X: -15, Y: -10)
+    public Vector2 maxBounds; // Np. prawy górny róg mapy (np. X: 15, Y: 10)
+
+    private Camera cam;
+
+    void Start()
+    {
+        // Dobra praktyka: zapisujemy referencję do kamery na starcie (jest to wydajniejsze)
+        cam = Camera.main;
+    }
 
     void Update()
     {
-        // 1. POBIERANIE WEJŒCIA (Input)
-        //GetAxis pobiera wartoœæ od -1 do 1 (np. 'A' to -1, 'D' to 1)
-        float moveX = Input.GetAxis("Horizontal"); 
-        float moveY = Input.GetAxis("Vertical");
-
-        // 2. OBLICZANIE RUCHU
-        Vector3 moveDirection = new Vector3(moveX, moveY, 0);
-        
-        // 3. PRZESUNIÊCIE
-        // Time.deltaTime sprawia, ¿e ruch jest niezale¿ny od FPS-ów
-        transform.position += moveDirection * moveSpeed * Time.deltaTime;
-
-        // 4. OPCJONALNIE: ZOOM (Dla kamer ortograficznych)
+        // --------------------------------------------------------
+        // 1. ZOOM
+        // --------------------------------------------------------
         float scroll = Input.GetAxis("Mouse ScrollWheel");
-        Camera.main.orthographicSize -= scroll * zoomSpeed;
+        if (scroll != 0)
+        {
+            float newZoom = cam.orthographicSize - scroll * zoomSpeed;
+            // Używamy klamry, aby zoom nigdy nie zszedł poniżej minZoom ani powyżej maxZoom
+            cam.orthographicSize = Mathf.Clamp(newZoom, minZoom, maxZoom);
+        }
+
+        // --------------------------------------------------------
+        // 2. OBLICZANIE RUCHU
+        // --------------------------------------------------------
+        float moveX = Input.GetAxis("Horizontal");
+        float moveY = Input.GetAxis("Vertical");
+        Vector3 moveDirection = new Vector3(moveX, moveY, 0);
+
+        // Obliczamy, gdzie kamera CHCE polecieć w tej klatce
+        Vector3 targetPosition = transform.position + moveDirection * moveSpeed * Time.deltaTime;
+
+        // --------------------------------------------------------
+        // 3. BLOKADA GRANIC (Dynamiczna)
+        // --------------------------------------------------------
+        // Obliczamy fizyczny rozmiar tego, co kamera aktualnie widzi (w zależności od zooma!)
+        float camHeight = cam.orthographicSize;
+        float camWidth = camHeight * cam.aspect;
+
+        // Zamykamy docelową pozycję w klamrze, odejmując od granic "margines" widzenia kamery
+        float clampedX = Mathf.Clamp(targetPosition.x, minBounds.x + camWidth, maxBounds.x - camWidth);
+        float clampedY = Mathf.Clamp(targetPosition.y, minBounds.y + camHeight, maxBounds.y - camHeight);
+
+        // Nakładamy wyliczoną, uciętą pozycję. Zostawiamy oryginalne 'Z', żeby kamera się nie zepsuła
+        transform.position = new Vector3(clampedX, clampedY, transform.position.z);
     }
 }

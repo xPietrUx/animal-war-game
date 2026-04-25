@@ -180,6 +180,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4eedd5d2f42019b43a51558cb65a8d15, type: 3}
+--- !u!1 &56432007
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 56432008}
+  m_Layer: 5
+  m_Name: Marker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &56432008
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 56432007}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 15.06, y: 9.97, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &68107180
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,6 +439,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   moveSpeed: 10
   zoomSpeed: 5
+  minZoom: 1
+  maxZoom: 8
+  minBounds: {x: -15, y: -7}
+  maxBounds: {x: 15, y: 10}
 --- !u!114 &71400722
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -415,7 +450,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 71400716}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
   m_Name: 
@@ -524,7 +559,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 1030820c42eb4ae44b63c12a8df149c3, type: 3}
   - {fileID: 21300000, guid: 500f3238ae0188e4c96cbb08cbc3bac4, type: 3}
   timePerFrame: 0.3
-  nazwaMapy: plansza
 --- !u!1 &164569820
 GameObject:
   m_ObjectHideFlags: 0
@@ -2942,7 +2976,7 @@ GameObject:
   - component: {fileID: 599926300}
   - component: {fileID: 599926299}
   m_Layer: 5
-  m_Name: Canvas
+  m_Name: Main menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -15221,3 +15255,4 @@ SceneRoots:
   - {fileID: 1597204125}
   - {fileID: 143608907}
   - {fileID: 599926302}
+  - {fileID: 56432008}
