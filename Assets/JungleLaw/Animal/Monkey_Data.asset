@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Monkey
   moveRange: 2
   attackRange: 1
+  visionRange: 5
   maxHP: 80
   maxAttack: 45
   cost: 70

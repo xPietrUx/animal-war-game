@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Frog
   moveRange: 3
   attackRange: 1
+  visionRange: 2
   maxHP: 80
   maxAttack: 25
   cost: 50

@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Duck
   moveRange: 1
   attackRange: 2
+  visionRange: 3
   maxHP: 95
   maxAttack: 35
   cost: 100

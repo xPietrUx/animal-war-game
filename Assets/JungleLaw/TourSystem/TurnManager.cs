@@ -97,6 +97,15 @@ public class TurnManager : MonoBehaviour
         UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
         Debug.Log($"UI zaktualizowane dla: {currentTurn}. Złoto: {currentGoldIncome}, Mana: {currentManaIncome}"); CalculateBaseDamage();
         UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
+
+        // Obliczamy numer drużyny (Player1 = 1, Player2 = 2)
+        int currentTurnTeam = (currentTurn == TurnState.Player1) ? 1 : 2;
+
+        // Zaktualizuj mgłę dla nowego gracza!
+        if (FogOfWarManager.Instance != null)
+        {
+            FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
+        }
     }
 
     private void CalculateBaseDamage()
