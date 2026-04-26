@@ -106,6 +106,15 @@ public class TurnManager : MonoBehaviour
         {
             FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
         }
+
+        // Obliczamy numer drużyny (Player1 = 1, Player2 = 2)
+        int currentTurnTeam = (currentTurn == TurnState.Player1) ? 1 : 2;
+
+        // Zaktualizuj mgłę dla nowego gracza!
+        if (FogOfWarManager.Instance != null)
+        {
+            FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
+        }
     }
 
     private void CalculateBaseDamage()
