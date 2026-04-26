@@ -2967,22 +2967,6 @@ MonoBehaviour:
   fogTile: {fileID: 11400000, guid: 32d01cf720474e945b65a0303ec70e82, type: 2}
   minBounds: {x: -20, y: -15, z: 0}
   maxBounds: {x: 20, y: 15, z: 0}
---- !u!114 &395545856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 395545850}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51e07904daafb46409db74a07258d650, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FogOfWarManager
-  fogMap: {fileID: 1072063194}
-  fogTile: {fileID: 11400000, guid: 32d01cf720474e945b65a0303ec70e82, type: 2}
-  minBounds: {x: -20, y: -15, z: 0}
-  maxBounds: {x: 20, y: 15, z: 0}
 --- !u!4 &404865424 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 3337988250118779944, guid: 4eedd5d2f42019b43a51558cb65a8d15, type: 3}
@@ -8975,7 +8959,6 @@ Transform:
   - {fileID: 402958745}
   - {fileID: 1608796938}
   - {fileID: 1786815762}
-  - {fileID: 1072063192}
   - {fileID: 1072063192}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
