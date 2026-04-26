@@ -16,8 +16,15 @@ public class TurnManager : MonoBehaviour
     public int p2_HP = 100;
     public int p2_Gold = 50;
 
+    [Header("Mana")]
+    public int p1_Mana = 0;
+    public int p2_Mana = 0;
+    public int baseManaPerTurn = 1;
+
     [Header("Economy")]
     public int baseGoldPerTurn = 30; // Podstawowe złoto, które dostaje się zawsze
+    [HideInInspector] public int currentGoldIncome;
+    [HideInInspector] public int currentManaIncome;
 
     private void Awake() => Instance = this;
 
@@ -49,34 +56,46 @@ public class TurnManager : MonoBehaviour
             a.UpdateAllegianceColor(); // NOWOŚĆ: Każdej jednostce każemy przemyśleć swój kolor!
         }
 
-        // 2. ZBIERZ ZŁOTO Z PRZEJĘTYCH PUNKTÓW
-        int income = baseGoldPerTurn; // Zaczynamy od podstawowej kwoty (np. 30)
+        // 2. ZBIERZ ZŁOTO, MANĘ I ODPAL ARTYLERIĘ
+        currentGoldIncome = baseGoldPerTurn; // Zamiast: int goldIncome = ...
+        currentManaIncome = baseManaPerTurn; // Zamiast: int manaIncome = ...
+
         CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
 
-        // Sprawdzamy każdy punkt na mapie
         foreach (CapturePoint point in allPoints)
         {
-            // Jeśli punkt należy do gracza, którego jest teraz tura - dodaj złoto!
-            if (point.ownerTeam == 1 && currentTurn == TurnState.Player1) income += point.goldPerTurn;
-            if (point.ownerTeam == 2 && currentTurn == TurnState.Player2) income += point.goldPerTurn;
+            if (point.ownerTeam == 1 && currentTurn == TurnState.Player1)
+            {
+                currentGoldIncome += point.goldPerTurn;
+                currentManaIncome += point.manaPerTurn;
+                if (point.isAttackPoint) p2_HP -= point.damagePerTurn;
+            }
+            else if (point.ownerTeam == 2 && currentTurn == TurnState.Player2)
+            {
+                currentGoldIncome += point.goldPerTurn;
+                currentManaIncome += point.manaPerTurn;
+                if (point.isAttackPoint) p1_HP -= point.damagePerTurn;
+            }
         }
 
-        // 3. DODAJ ZŁOTO I ZAKTUALIZUJ UI
+        // 3. DODAJ ZASOBY I ZAKTUALIZUJ UI
         if (currentTurn == TurnState.Player1)
         {
-            p1_Gold += income;
-            UIManager.Instance.UpdateTurnInfo("Player1", p1_Gold);
+            p1_Gold += currentGoldIncome;
+            p1_Mana += currentManaIncome;
+            // Zmieniamy wywołanie - wysyłamy też DOCHÓD!
+            UIManager.Instance.UpdateTurnInfo("PLAYER 1", p1_Gold, currentGoldIncome, p1_Mana, currentManaIncome);
         }
         else
         {
-            p2_Gold += income;
-            UIManager.Instance.UpdateTurnInfo("Player2", p2_Gold);
+            p2_Gold += currentGoldIncome;
+            p2_Mana += currentManaIncome;
+            UIManager.Instance.UpdateTurnInfo("PLAYER 2", p2_Gold, currentGoldIncome, p2_Mana, currentManaIncome);
         }
 
-        UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
-        Debug.Log($"UI zaktualizowane dla: {currentTurn}. Dochód w tej turze: {income}");
 
-        CalculateBaseDamage();
+        UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
+        Debug.Log($"UI zaktualizowane dla: {currentTurn}. Złoto: {currentGoldIncome}, Mana: {currentManaIncome}"); CalculateBaseDamage();
         UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
     }
 

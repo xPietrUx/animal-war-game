@@ -4,6 +4,7 @@ using TMPro; // Ważne dla obsługi TextMeshPro
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance;
+    public TextMeshProUGUI manaDisplay; // Tekst wyświetlający ilość many
 
     [Header("Top Bar")]
     public TextMeshProUGUI blueBaseHPText;
@@ -14,6 +15,17 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI goldText;
     public TextMeshProUGUI unitCostText;
 
+    [Header("Hover Costs")]
+    public TextMeshProUGUI costGoldText; // Przeciągnij tu swój 'CostDisplay'
+    public TextMeshProUGUI costManaText; // Przeciągnij tu swój 'CostManaDisplay'
+
+    // Funkcja wywoływana, gdy najeżdżamy na przycisk
+    public void UpdateHoverCosts(string goldCost, string manaCost)
+    {
+        if (costGoldText != null) costGoldText.text = "GOLD: " + goldCost;
+        if (costManaText != null) costManaText.text = "MANA: " + manaCost;
+    }
+
     private void Awake()
     {
         // Singleton - dzięki temu TurnManager może napisać "UIManager.Instance"
@@ -21,15 +33,15 @@ public class UIManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    // Tę funkcję wywołuje TurnManager przy zmianie tury
-    public void UpdateTurnInfo(string playerName, int gold)
+    // Dodaliśmy dwie nowe zmienne: goldIncome i manaIncome
+    public void UpdateTurnInfo(string playerName, int goldAmount, int goldIncome, int manaAmount, int manaIncome)
     {
-        if (currentPlayerText != null)
-        {
-            string displayName = playerName == "Player1" ? "Player 1" : "Player 2";
-            currentPlayerText.text = displayName;
-        }
-        if (goldText != null) goldText.text = "Gold: " + gold;
+        if (currentPlayerText != null) currentPlayerText.text = playerName;
+
+        // Składamy piękny napis ze znakiem '+' i nawiasami
+        if (goldText != null) goldText.text = $"GOLD: {goldAmount} (+{goldIncome})";
+
+        if (manaDisplay != null) manaDisplay.text = $"MANA: {manaAmount} (+{manaIncome})";
     }
 
     // Funkcja do aktualizacji tekstu kosztu
