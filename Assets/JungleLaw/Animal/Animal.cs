@@ -145,6 +145,11 @@ public class Animal : MonoBehaviour
                 break;
             }
         }
+
+        if (FogOfWarManager.Instance != null)
+        {
+            FogOfWarManager.Instance.UpdateFog(this.team);
+        }
     }
 
     // --- ŚMIERĆ (ANIMOWANA) ---

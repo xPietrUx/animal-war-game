@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Kapibara
   moveRange: 1
   attackRange: 3
+  visionRange: 2
   maxHP: 65
   maxAttack: 55
   cost: 40

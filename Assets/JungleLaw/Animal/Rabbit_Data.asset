@@ -15,6 +15,7 @@ MonoBehaviour:
   speciesName: Rabbit
   moveRange: 3
   attackRange: 1
+  visionRange: 6
   maxHP: 50
   maxAttack: 65
   cost: 80
