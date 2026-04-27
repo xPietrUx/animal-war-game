@@ -48,6 +48,19 @@ public class TurnManager : MonoBehaviour
 
     private void StartTurn()
     {
+        // Losowanie pogody tylko gdy zaczyna Gracz 1 (Początek nowego "Dnia")
+        if (currentTurn == TurnState.Player1)
+        {
+            // 20% szans na deszcz w tej rundzie
+            if (Random.Range(0, 100) < 20)
+            {
+                WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Rain);
+            }
+            else
+            {
+                WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Clear);
+            }
+        }
         // 1. ZRESETUJ JEDNOSTKI I ZAKTUALIZUJ ICH KOLORY
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal a in allAnimals)

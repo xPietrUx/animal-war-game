@@ -12,6 +12,9 @@ public class Animal : MonoBehaviour
     public GameObject hpEffectPrefab; // Przeciągnij tu prefab -hp
     [Header("UI")]
     public Image healthBarFill;
+    [Header("Aktualne Statystyki (Zmienne)")]
+    public int currentMoveRange;
+    public int currentVisionRange;
 
     private Grid mainGrid;
     private SpriteRenderer spriteRenderer;
@@ -44,6 +47,10 @@ public class Animal : MonoBehaviour
     {
         mainGrid = FindFirstObjectByType<Grid>();
         currentHP = data.maxHP;
+
+        // Przepisujemy bazowe dane z matrycy do tymczasowych zmiennych
+        currentMoveRange = data.moveRange;
+        currentVisionRange = data.visionRange;
 
         if (data.idleSprite != null)
             spriteRenderer.sprite = data.idleSprite;
@@ -219,6 +226,22 @@ public class Animal : MonoBehaviour
                 // To tura przeciwnika - pasek jest czerwony
                 healthBarFill.color = Color.red;
             }
+        }
+    }
+    public void ApplyWeather(WeatherManager.WeatherCondition weather)
+    {
+        if (weather == WeatherManager.WeatherCondition.Rain)
+        {
+            // Deszcz obcina ruch i wizję o 1 (Mathf.Max zapobiega spadkowi poniżej 1)
+            currentMoveRange = Mathf.Max(1, data.moveRange - 1);
+            currentVisionRange = Mathf.Max(1, data.visionRange - 1);
+            Debug.Log($"{data.speciesName} moknie! Ruch: {currentMoveRange}, Zasięg widzenia: {currentVisionRange}");
+        }
+        else if (weather == WeatherManager.WeatherCondition.Clear)
+        {
+            // Słońce przywraca normalne statystyki
+            currentMoveRange = data.moveRange;
+            currentVisionRange = data.visionRange;
         }
     }
 }
