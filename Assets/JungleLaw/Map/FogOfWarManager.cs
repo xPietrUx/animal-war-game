@@ -35,7 +35,7 @@ public class FogOfWarManager : MonoBehaviour
             // Zdejmujemy mgłę tylko wokół żywych jednostek NASZEJ drużyny
             if (a.team == currentTeam && a.enabled)
             {
-                RevealArea(a.gridPosition, a.data.visionRange);
+                RevealArea(a.gridPosition, a.currentVisionRange);
             }
         }
 

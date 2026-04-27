@@ -87,7 +87,7 @@ public class SelectionManager : MonoBehaviour
     public void ShowMoveRange(Animal animal)
     {
         highlightMap.ClearAllTiles();
-        int range = animal.data.moveRange;
+        int range = animal.currentMoveRange;
         Vector3Int startPos = animal.gridPosition;
 
         for (int x = -range; x <= range; x++)
