@@ -77,6 +77,9 @@ public class TurnManager : MonoBehaviour
 
         foreach (CapturePoint point in allPoints)
         {
+            // Jeśli budynek jest sporny, pomijamy go (nie generuje zysków!)
+            if (point.isContested) continue;
+
             if (point.ownerTeam == 1 && currentTurn == TurnState.Player1)
             {
                 currentGoldIncome += point.goldPerTurn;
@@ -135,15 +138,20 @@ public class TurnManager : MonoBehaviour
 
         foreach (CapturePoint point in allPoints)
         {
-            // Jeśli jest tura Gracza 1 i on posiada ten punkt
-            if (currentTurn == TurnState.Player1 && point.ownerTeam == 1)
+            // Jeśli budynek jest sporny, pomijamy go (nie generuje zysków!)
+            if (point.isContested) continue;
+
+            if (point.ownerTeam == 1 && currentTurn == TurnState.Player1)
             {
-                p2_HP -= point.damagePerTurn; // Gracz 1 bije bazę Gracza 2
+                currentGoldIncome += point.goldPerTurn;
+                currentManaIncome += point.manaPerTurn;
+                if (point.isAttackPoint) p2_HP -= point.damagePerTurn;
             }
-            // Jeśli jest tura Gracza 2 i on posiada ten punkt
-            else if (currentTurn == TurnState.Player2 && point.ownerTeam == 2)
+            else if (point.ownerTeam == 2 && currentTurn == TurnState.Player2)
             {
-                p1_HP -= point.damagePerTurn; // Gracz 2 bije bazę Gracza 1
+                currentGoldIncome += point.goldPerTurn;
+                currentManaIncome += point.manaPerTurn;
+                if (point.isAttackPoint) p1_HP -= point.damagePerTurn;
             }
         }
     }
