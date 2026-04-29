@@ -15,6 +15,10 @@ public class Animal : MonoBehaviour
     [Header("Aktualne Statystyki (Zmienne)")]
     public int currentMoveRange;
     public int currentVisionRange;
+    public int currentAttack; // NOWOŚĆ: Zmienny atak
+
+    // Zmienna, w której przechowamy referencję do warstwy wzgórz
+    private UnityEngine.Tilemaps.Tilemap hillsMap;
 
     private Grid mainGrid;
     private SpriteRenderer spriteRenderer;
@@ -48,6 +52,14 @@ public class Animal : MonoBehaviour
         mainGrid = FindFirstObjectByType<Grid>();
         currentHP = data.maxHP;
 
+        // Szukamy obiektu o nazwie "HillsMap" na scenie
+        GameObject hillsObj = GameObject.Find("HillsMap");
+        if (hillsObj != null) hillsMap = hillsObj.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+
+        // Zamiast ustawiać parametry ręcznie, odpalamy nasz nowy silnik przeliczający!
+        RecalculateStats();
+
+        SnapToGrid(mainGrid);
         // Przepisujemy bazowe dane z matrycy do tymczasowych zmiennych
         currentMoveRange = data.moveRange;
         currentVisionRange = data.visionRange;
@@ -95,7 +107,12 @@ public class Animal : MonoBehaviour
 
         if (currentHP <= 0)
         {
-            isDead = true; // Blokujemy inne animacje
+            isDead = true;
+
+            // NOWOŚĆ: Skoro jednostka padła, aktualizujemy układ sił na mapie
+            CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
+            foreach (CapturePoint point in allPoints) point.EvaluateControl();
+
             Die();
         }
         else
@@ -136,27 +153,28 @@ public class Animal : MonoBehaviour
         int dy = Mathf.Abs(targetCell.y - gridPosition.y);
         int dist = dx + dy;
 
-        if (dist <= data.moveRange && GridManager.Instance.IsTileWalkable(targetCell))
+        if (dist <= currentMoveRange && GridManager.Instance.IsTileWalkable(targetCell))
         {
-            GridManager.Instance.LeaveTile(gridPosition);
             gridPosition = targetCell;
             transform.position = mainGrid.GetCellCenterWorld(gridPosition);
             GridManager.Instance.OccupyTile(gridPosition, this);
+
+            // NOWOŚĆ: Stanęliśmy na nowym polu - przeliczamy otoczenie!
+            RecalculateStats();
+
+            // Odsłanianie mgły (użyje naszego nowego currentVisionRange, który mógł urosnąć od wzgórza!)
+            if (FogOfWarManager.Instance != null) FogOfWarManager.Instance.UpdateFog(this.team);
         }
+
+        // NOWOŚĆ: Po wykonaniu ruchu powiedz wszystkim budynkom, żeby sprawdziły teren!
         CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
         foreach (CapturePoint point in allPoints)
         {
-            if (point.gridPosition == this.gridPosition)
-            {
-                point.Capture(this.team); // Wbijamy flagę naszej drużyny!
-                break;
-            }
+            point.EvaluateControl();
         }
 
-        if (FogOfWarManager.Instance != null)
-        {
-            FogOfWarManager.Instance.UpdateFog(this.team);
-        }
+        // Odsłanianie mgły (jeśli masz to zaimplementowane pod ruchem)
+        if (FogOfWarManager.Instance != null) FogOfWarManager.Instance.UpdateFog(this.team);
     }
 
     // --- ŚMIERĆ (ANIMOWANA) ---
@@ -243,5 +261,40 @@ public class Animal : MonoBehaviour
             currentMoveRange = data.moveRange;
             currentVisionRange = data.visionRange;
         }
+    }
+
+    // MÓZG OBLICZENIOWY JEDNOSTKI
+    public void RecalculateStats()
+    {
+        // KROK 1: Reset do ustawień fabrycznych (Złota zasada z plików Data)
+        currentMoveRange = data.moveRange;
+        currentVisionRange = data.visionRange;
+        currentAttack = data.maxAttack;
+
+        // KROK 2: Debuff z Pogody (Np. Deszcz ucina 1 pole widzenia)
+        if (WeatherManager.Instance != null && WeatherManager.Instance.currentWeather == WeatherManager.WeatherCondition.Rain)
+        {
+            currentMoveRange = Mathf.Max(1, currentMoveRange - 1);
+            currentVisionRange = Mathf.Max(1, currentVisionRange - 1);
+        }
+
+        // KROK 3: Buff z Terenu (Wzgórze)
+        // Jeśli mapa wzgórz istnieje i na naszych koordynatach znajduje się jakiś kafelek...
+        if (hillsMap != null && hillsMap.HasTile(gridPosition))
+        {
+            currentVisionRange += 2; // Radar widzi o 2 pola dalej!
+            currentAttack += 10;     // Przewaga wysokości daje +10 do obrażeń!
+
+            // Opcjonalnie: Zmiana koloru na lekko pomarańczowy by gracz wiedział, że jednostka jest zbuffowana
+            // GetComponent<SpriteRenderer>().color = new Color(1f, 0.8f, 0.6f); 
+        }
+        else
+        {
+            // Resetujemy kolor, gdy schodzimy ze wzgórza
+            if (this.hasMoved) GetComponent<SpriteRenderer>().color = Color.gray;
+            else GetComponent<SpriteRenderer>().color = Color.white;
+        }
+
+        Debug.Log($"{data.speciesName} na polu {gridPosition}. Atak: {currentAttack}, Wizja: {currentVisionRange}");
     }
 }
