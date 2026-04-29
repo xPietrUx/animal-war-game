@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro; // Ważne dla obsługi TextMeshPro
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -14,6 +15,9 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI currentPlayerText;
     public TextMeshProUGUI goldText;
     public TextMeshProUGUI unitCostText;
+    public Image currentPlayerImage; // <--- Miejsce na komponent obrazka na ekranie
+    public Sprite p1TurnGraphic;     // <--- Plik graficzny dla Gracza 1
+    public Sprite p2TurnGraphic;     // <--- Plik graficzny dla Gracza 2
 
     [Header("Hover Costs")]
     public TextMeshProUGUI costGoldText; // Przeciągnij tu swój 'CostDisplay'
@@ -22,8 +26,8 @@ public class UIManager : MonoBehaviour
     // Funkcja wywoływana, gdy najeżdżamy na przycisk
     public void UpdateHoverCosts(string goldCost, string manaCost)
     {
-        if (costGoldText != null) costGoldText.text = "GOLD: " + goldCost;
-        if (costManaText != null) costManaText.text = "MANA: " + manaCost;
+        if (costGoldText != null) costGoldText.text = goldCost;
+        if (costManaText != null) costManaText.text = manaCost;
     }
 
     private void Awake()
@@ -37,11 +41,16 @@ public class UIManager : MonoBehaviour
     public void UpdateTurnInfo(string playerName, int goldAmount, int goldIncome, int manaAmount, int manaIncome)
     {
         if (currentPlayerText != null) currentPlayerText.text = playerName;
+        if (currentPlayerImage != null)
+        {
+            if (playerName == "PLAYER 1") currentPlayerImage.sprite = p1TurnGraphic;
+            else if (playerName == "PLAYER 2") currentPlayerImage.sprite = p2TurnGraphic;
+        }
 
         // Składamy piękny napis ze znakiem '+' i nawiasami
-        if (goldText != null) goldText.text = $"GOLD: {goldAmount} (+{goldIncome})";
+        if (goldText != null) goldText.text = $"{goldAmount} (+{goldIncome})";
 
-        if (manaDisplay != null) manaDisplay.text = $"MANA: {manaAmount} (+{manaIncome})";
+        if (manaDisplay != null) manaDisplay.text = $"{manaAmount} (+{manaIncome})";
     }
 
     // Funkcja do aktualizacji tekstu kosztu
