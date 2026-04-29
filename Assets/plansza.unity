@@ -15909,8 +15909,8 @@ MonoBehaviour:
   isLargeArea: 1
   goldPerTurn: 10
   manaPerTurn: 5
-  isAttackPoint: 0
-  damagePerTurn: 0
+  isAttackPoint: 1
+  damagePerTurn: 2
 --- !u!212 &2037373348
 SpriteRenderer:
   serializedVersion: 2
