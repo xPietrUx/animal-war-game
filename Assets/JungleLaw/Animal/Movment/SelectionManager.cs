@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -13,6 +14,21 @@ public class SelectionManager : MonoBehaviour
 
     void Update()
     {
+        // --- TYMCZASOWY KOD DO DEBUGOWANIA ---
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            mouseWorldPos.z = 0;
+            Vector3Int cellPos = grid.WorldToCell(mouseWorldPos);
+
+            bool hasGround = GridManager.Instance.groundTilemap.HasTile(cellPos);
+            bool hasRiver = GridManager.Instance.riverTilemap.HasTile(cellPos);
+            bool hasBridge = GridManager.Instance.bridgeTilemap.HasTile(cellPos);
+            bool hasObstacle = GridManager.Instance.obstacleTilemap.HasTile(cellPos);
+
+            Debug.Log($"Sprawdzam pole {cellPos} | Ziemia: {hasGround} | Rzeka: {hasRiver} | Most: {hasBridge} | Przeszkody: {hasObstacle}");
+        }
+        // -------------------------------------
         // --------------------------------------------------------
         // PPM - Przełącz na Tryb Ataku (Tylko jeśli to Twoja tura!)
         // --------------------------------------------------------
@@ -90,24 +106,47 @@ public class SelectionManager : MonoBehaviour
         int range = animal.currentMoveRange;
         Vector3Int startPos = animal.gridPosition;
 
-        for (int x = -range; x <= range; x++)
+        // Używamy algorytmu BFS (Breadth-First Search) do "rozlewania" zasięgu ruchu
+        Queue<Vector3Int> queue = new Queue<Vector3Int>();
+        Dictionary<Vector3Int, int> distances = new Dictionary<Vector3Int, int>();
+
+        queue.Enqueue(startPos);
+        distances[startPos] = 0;
+
+        // Zawsze podświetlamy pole, na którym stoi jednostka
+        highlightMap.SetTile(startPos, highlightTile);
+
+        // 4 kierunki ruchu (bez skosów)
+        Vector3Int[] directions = { Vector3Int.up, Vector3Int.down, Vector3Int.left, Vector3Int.right };
+
+        while (queue.Count > 0)
         {
-            for (int y = -range; y <= range; y++)
+            Vector3Int currentPos = queue.Dequeue();
+            int currentDist = distances[currentPos];
+
+            // Jeśli osiągnęliśmy limit ruchu, nie szukamy dalej z tego pola
+            if (currentDist >= range) continue;
+
+            foreach (Vector3Int dir in directions)
             {
-                int dist = Mathf.Abs(x) + Mathf.Abs(y); // Manhattan
-                Vector3Int tilePos = new Vector3Int(startPos.x + x, startPos.y + y, 0);
+                Vector3Int neighborPos = currentPos + dir;
 
-                if (dist <= range)
+                // Jeśli jeszcze tu nie byliśmy
+                if (!distances.ContainsKey(neighborPos))
                 {
-                    bool isStartTile = (tilePos == startPos);
-
-                    if (isStartTile || GridManager.Instance.IsTileWalkable(tilePos))
+                    // Sprawdzamy czy na to sąsiednie pole można wejść
+                    if (GridManager.Instance.IsTileWalkable(neighborPos))
                     {
-                        Animal occupant = FindAnimalAtCell(tilePos);
+                        // Sprawdzamy kto tam stoi
+                        Animal occupant = FindAnimalAtCell(neighborPos);
 
+                        // Pozwalamy wejść tylko na puste pola (lub pole na którym już stoimy)
+                        // (Opcjonalnie możesz dodać logikę pozwalającą przechodzić przez sojuszników)
                         if (occupant == null || occupant == animal)
                         {
-                            highlightMap.SetTile(tilePos, highlightTile);
+                            distances[neighborPos] = currentDist + 1;
+                            queue.Enqueue(neighborPos);
+                            highlightMap.SetTile(neighborPos, highlightTile);
                         }
                     }
                 }
