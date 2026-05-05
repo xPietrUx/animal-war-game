@@ -37,14 +37,19 @@ public class CapturePoint : MonoBehaviour
 
         if (isLargeArea)
         {
+            // WYRÓWNANIE: Zanim obliczymy kafelki, "snapujemy" bazę do przecięcia kratek
+            Vector3 currentPos = transform.position;
+            // Zaokrąglamy do pełnych kratek, aby środek bazy 2x2 był zawsze na linii styku
+            transform.position = new Vector3(Mathf.Round(currentPos.x), Mathf.Round(currentPos.y), 0);
+
             Vector3 center = transform.position;
 
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, -0.5f, 0))); // Lewy Dół
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, -0.5f, 0)));  // Prawy Dół
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, 0.5f, 0)));  // Lewy Góra
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, 0.5f, 0)));   // Prawy Góra
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, -0.5f, 0)));
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, -0.5f, 0)));
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, 0.5f, 0)));
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, 0.5f, 0)));
 
-            gridPosition = areaPositions[0]; // Baza dla Mgły Wojny
+            gridPosition = areaPositions[0];
         }
         else
         {
