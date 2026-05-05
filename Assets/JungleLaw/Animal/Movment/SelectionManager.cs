@@ -74,10 +74,10 @@ public class SelectionManager : MonoBehaviour
                 else if (highlightMap.HasTile(clickedCell))
                 {
                     selectedAnimal.MoveTo(clickedCell);
-                    // NOWOŚĆ: Po ruchu jednostka kończy swoją aktywność w tej turze
                     selectedAnimal.FinishAction();
 
-                    highlightMap.ClearAllTiles();
+                    // TO JEST KLUCZOWE:
+                    highlightMap.ClearAllTiles(); // Czyścimy podświetlenie NATYCHMIAST po kliknięciu ruchu
                     selectedAnimal = null;
                 }
             }

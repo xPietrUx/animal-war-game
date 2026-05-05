@@ -22,15 +22,21 @@ public class GridManager : MonoBehaviour
 
     public bool IsTileWalkable(Vector3Int cellPos)
     {
-        // 1. CZY TU W OGÓLE JEST ZIEMIA? (Whitelisting)
-        // Je?li na mapie 'Ground' nie ma ?adnego kafelka, nie pozwól wej??.
+        // 1. Czy jest ziemia?
         if (!groundTilemap.HasTile(cellPos)) return false;
 
-        // 2. CZY JEST TU PRZESZKODA? (Blacklisting)
+        // 2. Czy jest przeszkoda (œciana/woda)?
         if (obstacleTilemap.HasTile(cellPos)) return false;
 
-        // 3. CZY STOI TU INNE ZWIERZÊ?
-        if (occupiedTiles.ContainsKey(cellPos) && occupiedTiles[cellPos] != null) return false;
+        // 3. Czy stoi tu inne zwierzê? 
+        // SPRAWDZAMY: Jeœli w s³owniku coœ jest, to czy to na pewno ¿ywe zwierzê?
+        if (occupiedTiles.ContainsKey(cellPos))
+        {
+            Animal animalOnTile = occupiedTiles[cellPos];
+            // Jeœli na polu stoi zwierzê i jest ono w³¹czone (nie jest nagrobkiem) -> blokujemy
+            if (animalOnTile != null && animalOnTile.enabled)
+                return false;
+        }
 
         return true;
     }
