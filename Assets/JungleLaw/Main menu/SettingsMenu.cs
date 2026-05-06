@@ -3,72 +3,61 @@ using UnityEngine.SceneManagement;
 
 public class SettingsMenu : MonoBehaviour
 {
-    [Header("Okna Widoku (Przeci¹gnij z Hierarchy)")]
-    public GameObject pauseOverlay;       // Tu przeci¹gnij okno z napisem PAUZA
-    public GameObject replayConfirmWindow; // Tu przeci¹gnij okno "Are you sure?" dla Replay
-    public GameObject quitConfirmWindow;   // Tu przeci¹gnij okno "Are you sure?" dla Quit
+    [Header("Okna Widoku")]
+    public GameObject pauseOverlay;
+    public GameObject replayConfirmWindow;
+    public GameObject quitConfirmWindow;
+
+    // Statyczna zmienna, która "prze¿yje" prze³adowanie sceny
+    public static bool shouldAutoStartGame = false;
 
     private bool isPaused = false;
 
-    // --- PAUZA ---
+    void Start()
+    {
+        if (pauseOverlay != null) pauseOverlay.SetActive(false);
+        if (replayConfirmWindow != null) replayConfirmWindow.SetActive(false);
+        if (quitConfirmWindow != null) quitConfirmWindow.SetActive(false);
+
+        Time.timeScale = 1f;
+        isPaused = false;
+    }
+
     public void TogglePause()
     {
         isPaused = !isPaused;
+        if (isPaused) { Time.timeScale = 0f; pauseOverlay.SetActive(true); }
+        else { ResumeGame(); }
+    }
 
-        if (isPaused)
-        {
-            Time.timeScale = 0f; // Zamra¿a grê
-            pauseOverlay.SetActive(true); // Pokazuje czarne t³o i napis PAUZA
-        }
-        else
-        {
-            Time.timeScale = 1f; // Wznawia grê
-            pauseOverlay.SetActive(false); // Ukrywa pauzê
-        }
+    public void ResumeGame()
+    {
+        isPaused = false;
+        Time.timeScale = 1f;
+        pauseOverlay.SetActive(false);
     }
 
     // --- REPLAY ---
-    public void OpenReplayConfirmation()
+    public void OpenReplayConfirmation() => replayConfirmWindow.SetActive(true);
+
+    public void ConfirmReplayYes()
     {
-        // Ta funkcja tylko POKAZUJE okno z pytaniem
-        replayConfirmWindow.SetActive(true);
+        shouldAutoStartGame = true; // Mówimy grze: "Po resecie odpal siê od razu"
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    public void ConfirmReplay(bool wantToReplay)
-    {
-        // Ta funkcja jest podpiêta pod przyciski TAK i NIE w okienku Replay
-        if (wantToReplay)
-        {
-            Time.timeScale = 1f;
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
-        else
-        {
-            // Jeœli klikniesz NIE, tylko ukrywa okienko
-            replayConfirmWindow.SetActive(false);
-        }
-    }
+    public void ConfirmReplayNo() => replayConfirmWindow.SetActive(false);
 
     // --- QUIT ---
-    public void OpenQuitConfirmation()
+    public void OpenQuitConfirmation() => quitConfirmWindow.SetActive(true);
+
+    public void ConfirmQuitYes()
     {
-        // Ta funkcja tylko POKAZUJE okno z pytaniem
-        quitConfirmWindow.SetActive(true);
+        shouldAutoStartGame = false; // Mówimy grze: "Po resecie idŸ do menu"
+        Time.timeScale = 1f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    public void ConfirmQuit(bool wantToQuit)
-    {
-        // Ta funkcja jest podpiêta pod przyciski TAK i NIE w okienku Quit
-        if (wantToQuit)
-        {
-            Time.timeScale = 1f;
-            // UWAGA: Upewnij siê, ¿e wpisujesz tu dok³adn¹ nazwê sceny swojego Menu G³ównego!
-            SceneManager.LoadScene("MainMenu");
-        }
-        else
-        {
-            // Jeœli klikniesz NIE, tylko ukrywa okienko
-            quitConfirmWindow.SetActive(false);
-        }
-    }
+    public void ConfirmQuitNo() => quitConfirmWindow.SetActive(false);
 }
