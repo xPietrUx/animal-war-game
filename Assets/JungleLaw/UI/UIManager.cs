@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro; // Ważne dla obsługi TextMeshPro
 using UnityEngine.UI;
+using System.Collections;
 
 public class UIManager : MonoBehaviour
 {
@@ -17,11 +18,14 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI unitCostText;
     public Image currentPlayerImage; // <--- Miejsce na komponent obrazka na ekranie
     public Sprite p1TurnGraphic;     // <--- Plik graficzny dla Gracza 1
-    public Sprite p2TurnGraphic;     // <--- Plik graficzny dla Gracza 2
+    public Sprite p2TurnGraphic;     // <--- Plik graficzny dla Gracza  2
 
     [Header("Hover Costs")]
     public TextMeshProUGUI costGoldText; // Przeciągnij tu swój 'CostDisplay'
     public TextMeshProUGUI costManaText; // Przeciągnij tu swój 'CostManaDisplay'
+
+    [Header("Komunikaty Błędów")]
+    public GameObject warningMessageGraphic; // Tu w inspektorze przypniesz swoją grafikę braku kasy
 
     // Funkcja wywoływana, gdy najeżdżamy na przycisk
     public void UpdateHoverCosts(string goldCost, string manaCost)
@@ -67,5 +71,27 @@ public class UIManager : MonoBehaviour
     {
         if (blueBaseHPText != null) blueBaseHPText.text = blueHP.ToString();
         if (redBaseHPText != null) redBaseHPText.text = redHP.ToString();
+    }
+
+    // Nowa funkcja do pokazywania komunikatu
+    public void ShowWarningMessage()
+    {
+        if (warningMessageGraphic != null)
+        {
+            // Zatrzymujemy poprzednie odliczanie, jeśli gracz klika bardzo szybko
+            StopCoroutine("HideWarningRoutine"); 
+            StartCoroutine("HideWarningRoutine");
+        }
+    }
+
+    // Coroutine, która gasi grafikę po X sekundach
+    private IEnumerator HideWarningRoutine()
+    {
+        warningMessageGraphic.SetActive(true);
+        
+        // Czekamy 2 sekundy (możesz zmienić tę wartość)
+        yield return new WaitForSeconds(2f);
+        
+        warningMessageGraphic.SetActive(false);
     }
 }
