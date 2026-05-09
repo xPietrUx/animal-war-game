@@ -65,9 +65,26 @@ public class SettingsMenu : MonoBehaviour
 
     public void ConfirmReplayYes()
     {
-        shouldAutoStartGame = true;
+        shouldAutoStartGame = true; // Mówimy grze: "Po resecie odpal siê od razu"
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        
+        replayConfirmWindow.SetActive(false); // Chowamy okienko
+
+        // Zamiast od razu ³adowaæ scenê, odpalamy animacjê ³adowania
+        if (LoadingScreenManager.instance != null)
+        {
+            LoadingScreenManager.instance.gameObject.SetActive(true);
+            // Wywo³ujemy asynchroniczne ³adowanie TA SAMEJ SCENY, na której jesteœmy
+            LoadingScreenManager.instance.StartCoroutine(
+                // Dodaj publiczn¹ metodê wrapper w LoadingScreenManager, np. LoadScenePublicCoroutine
+                LoadingScreenManager.instance.LoadScenePublicCoroutine(SceneManager.GetActiveScene().name)
+            );
+        }
+        else
+        {
+            // W razie jakby mened¿er nie istnia³ (awaryjnie)
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
     }
 
     public void ConfirmReplayNo() => replayConfirmWindow.SetActive(false);

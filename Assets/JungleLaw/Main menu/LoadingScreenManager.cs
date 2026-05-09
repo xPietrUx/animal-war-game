@@ -94,4 +94,9 @@ public class LoadingScreenManager : MonoBehaviour
             loadingPanel.SetActive(false);
         }
     }
+
+    public IEnumerator LoadScenePublicCoroutine(string sceneToLoad)
+    {
+        return LoadSceneCoroutine(sceneToLoad);
+    }
 }
