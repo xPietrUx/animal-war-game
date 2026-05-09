@@ -37,6 +37,9 @@ public class TurnManager : MonoBehaviour
 
     public void EndTurn()
     {
+        // Jeśli HP zeszło poniżej zera (gra skończona), blokujemy zmianę tury!
+        if (p1_HP <= 0 || p2_HP <= 0) return;
+
         // Zmiana gracza
         currentTurn = (currentTurn == TurnState.Player1) ? TurnState.Player2 : TurnState.Player1;
 
@@ -51,55 +54,29 @@ public class TurnManager : MonoBehaviour
         // Losowanie pogody tylko gdy zaczyna Gracz 1 (Początek nowego "Dnia")
         if (currentTurn == TurnState.Player1)
         {
-            // 20% szans na deszcz w tej rundzie
-            if (Random.Range(0, 100) < 20)
-            {
-                WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Rain);
-            }
-            else
-            {
-                WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Clear);
-            }
+            if (Random.Range(0, 100) < 20) WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Rain);
+            else WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Clear);
         }
+
         // 1. ZRESETUJ JEDNOSTKI I ZAKTUALIZUJ ICH KOLORY
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal a in allAnimals)
         {
             a.ResetTurn();
-            a.UpdateAllegianceColor(); // NOWOŚĆ: Każdej jednostce każemy przemyśleć swój kolor!
+            a.UpdateAllegianceColor();
         }
 
-        // 2. ZBIERZ ZŁOTO, MANĘ I ODPAL ARTYLERIĘ
-        currentGoldIncome = baseGoldPerTurn; // Zamiast: int goldIncome = ...
-        currentManaIncome = baseManaPerTurn; // Zamiast: int manaIncome = ...
+        // 2. ZBIERZ ZŁOTO, MANĘ I ZADAJ OBRAŻENIA BAZOM
+        currentGoldIncome = baseGoldPerTurn; 
+        currentManaIncome = baseManaPerTurn; 
 
-        CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
-
-        foreach (CapturePoint point in allPoints)
-        {
-            // Jeśli budynek jest sporny, pomijamy go (nie generuje zysków!)
-            if (point.isContested) continue;
-
-            if (point.ownerTeam == 1 && currentTurn == TurnState.Player1)
-            {
-                currentGoldIncome += point.goldPerTurn;
-                currentManaIncome += point.manaPerTurn;
-                if (point.isAttackPoint) p2_HP -= point.damagePerTurn;
-            }
-            else if (point.ownerTeam == 2 && currentTurn == TurnState.Player2)
-            {
-                currentGoldIncome += point.goldPerTurn;
-                currentManaIncome += point.manaPerTurn;
-                if (point.isAttackPoint) p1_HP -= point.damagePerTurn;
-            }
-        }
+        CalculateBaseDamage(); // Tu już wszystko liczymy poprawnie dzięki poprawce poniżej
 
         // 3. DODAJ ZASOBY I ZAKTUALIZUJ UI
         if (currentTurn == TurnState.Player1)
         {
             p1_Gold += currentGoldIncome;
             p1_Mana += currentManaIncome;
-            // Zmieniamy wywołanie - wysyłamy też DOCHÓD!
             UIManager.Instance.UpdateTurnInfo("PLAYER 1", p1_Gold, currentGoldIncome, p1_Mana, currentManaIncome);
         }
         else
@@ -109,22 +86,13 @@ public class TurnManager : MonoBehaviour
             UIManager.Instance.UpdateTurnInfo("PLAYER 2", p2_Gold, currentGoldIncome, p2_Mana, currentManaIncome);
         }
 
-
         UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
-        Debug.Log($"UI zaktualizowane dla: {currentTurn}. Złoto: {currentGoldIncome}, Mana: {currentManaIncome}"); CalculateBaseDamage();
-        UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
+        
+        // 4. SPRAWDZENIE WARUNKU ZWYCIĘSTWA PO ODJĘCIU PUNKTÓW ZDROWIA(HP) BAzy
+        CheckWinCondition();
 
-        // Obliczamy numer drużyny (Player1 = 1, Player2 = 2)
         int currentTurnTeam = (currentTurn == TurnState.Player1) ? 1 : 2;
 
-        // Zaktualizuj mgłę dla nowego gracza!
-        if (FogOfWarManager.Instance != null)
-        {
-            FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
-        }
-
-
-        // Zaktualizuj mgłę dla nowego gracza!
         if (FogOfWarManager.Instance != null)
         {
             FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
@@ -133,12 +101,10 @@ public class TurnManager : MonoBehaviour
 
     private void CalculateBaseDamage()
     {
-        // Znajdź wszystkie punkty na mapie
         CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
 
         foreach (CapturePoint point in allPoints)
         {
-            // Jeśli budynek jest sporny, pomijamy go (nie generuje zysków!)
             if (point.isContested) continue;
 
             if (point.ownerTeam == 1 && currentTurn == TurnState.Player1)
@@ -153,6 +119,36 @@ public class TurnManager : MonoBehaviour
                 currentManaIncome += point.manaPerTurn;
                 if (point.isAttackPoint) p1_HP -= point.damagePerTurn;
             }
+        }
+    }
+
+    private void CheckWinCondition()
+    {
+        Debug.Log($"Sprawdzanie stanu bazy: P1 HP = {p1_HP}, P2 HP = {p2_HP}");
+
+        if (GameOverManager.Instance == null)
+        {
+            Debug.LogError("BRAK INSTANCJI GameOverManager! Upewnij się, że obiekt z tym skryptem jest aktywny na scenie.");
+            return;
+        }
+
+        // Sprawdzamy czy którykolwiek gracz ma 0 lub less punktów zdrowia
+        if (p1_HP <= 0 && p2_HP <= 0)
+        {
+            GameOverManager.Instance.ShowGameOver("REMIS");
+            this.enabled = false; // <<< TO BLOKUJE DALSZĄ GRĘ
+        }
+        else if (p1_HP <= 0)
+        {
+            Debug.Log("Zniszczono bazę Gracza 1!");
+            GameOverManager.Instance.ShowGameOver("Gracz 2");
+            this.enabled = false; // <<< TO BLOKUJE DALSZĄ GRĘ
+        }
+        else if (p2_HP <= 0)
+        {
+            Debug.Log("Zniszczono bazę Gracza 2!");
+            GameOverManager.Instance.ShowGameOver("Gracz 1");
+            this.enabled = false; // <<< TO BLOKUJE DALSZĄ GRĘ
         }
     }
 }

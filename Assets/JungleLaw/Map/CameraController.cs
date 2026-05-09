@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems; // Dodano dostęp do mechanizmów wykrywania UI
 
 public class CameraController : MonoBehaviour
 {
@@ -24,6 +25,13 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
+        // Blokujemy kontrolę nad kamerą, gdy gra jest spauzowana (czas wstrzymany)
+        // lub gdy kursor myszy znajduje się nad elementem UI (menu/panel)
+        if (Time.timeScale == 0f || EventSystem.current.IsPointerOverGameObject())
+        {
+            return; 
+        }
+
         // --------------------------------------------------------
         // 1. ZOOM
         // --------------------------------------------------------

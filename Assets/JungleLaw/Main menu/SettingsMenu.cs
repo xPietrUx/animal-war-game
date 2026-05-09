@@ -61,7 +61,11 @@ public class SettingsMenu : MonoBehaviour
     }
 
     // --- REPLAY ---
-    public void OpenReplayConfirmation() => replayConfirmWindow.SetActive(true);
+    public void OpenReplayConfirmation() 
+    {
+        replayConfirmWindow.SetActive(true);
+        Time.timeScale = 0f; // Zatrzymujemy czas
+    }
 
     public void ConfirmReplayYes()
     {
@@ -87,10 +91,19 @@ public class SettingsMenu : MonoBehaviour
         }
     }
 
-    public void ConfirmReplayNo() => replayConfirmWindow.SetActive(false);
+    public void ConfirmReplayNo() 
+    {
+        replayConfirmWindow.SetActive(false);
+        // Jeœli nie jesteœmy w trybie ogólnej pauzy, wznawiamy czas
+        if (!pauseOverlay.activeSelf) Time.timeScale = 1f; 
+    }
 
     // --- QUIT ---
-    public void OpenQuitConfirmation() => quitConfirmWindow.SetActive(true);
+    public void OpenQuitConfirmation() 
+    {
+        quitConfirmWindow.SetActive(true);
+        Time.timeScale = 0f; // Zatrzymujemy czas
+    }
 
     public void ConfirmQuitYes()
     {
@@ -112,5 +125,10 @@ public class SettingsMenu : MonoBehaviour
         }
     }
 
-    public void ConfirmQuitNo() => quitConfirmWindow.SetActive(false);
+    public void ConfirmQuitNo() 
+    {
+        quitConfirmWindow.SetActive(false);
+        // Jeœli nie jesteœmy w trybie ogólnej pauzy, wznawiamy czas
+        if (!pauseOverlay.activeSelf) Time.timeScale = 1f; 
+    }
 }

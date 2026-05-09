@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.EventSystems; // Dodaj na górze pliku, np. w SelectionManager.cs
 
 public class SelectionManager : MonoBehaviour
 {
@@ -13,6 +14,12 @@ public class SelectionManager : MonoBehaviour
 
     void Update()
     {
+        // Jeśli czas jest zatrzymany ALBO mysz znajduje się nad jakimś elementem UI - nie reaguj na input gracza!
+        if (Time.timeScale == 0f || EventSystem.current.IsPointerOverGameObject())
+        {
+            return; 
+        }
+
         // --------------------------------------------------------
         // PPM - Przełącz na Tryb Ataku (Tylko jeśli to Twoja tura!)
         // --------------------------------------------------------
