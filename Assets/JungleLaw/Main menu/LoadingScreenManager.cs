@@ -47,30 +47,36 @@ public class LoadingScreenManager : MonoBehaviour
     public void LoadGameMapAsync()
     {
         Debug.Log("PUK PUK! Przycisk wywo³a³ LoadingScreenManager!");
+        
+        // Zatrzymujemy korutynê SimpleLoading
+        SimpleLoading simpleLoading = GetComponent<SimpleLoading>();
+        if (simpleLoading != null)
+        {
+            simpleLoading.StopAllCoroutines();
+            if (simpleLoading.loadingPanel != null)
+                simpleLoading.loadingPanel.SetActive(false);
+        }
+        
         StartCoroutine(LoadSceneCoroutine(gameSceneName));
     }
 
     private IEnumerator LoadSceneCoroutine(string sceneToLoad)
     {
-        // Podmieniamy obrazek na pierwsz¹ klatkê ZANIM w³¹czymy widocznoœæ panelu
-        if (frames != null && frames.Length > 0 && animatedImage != null)
-        {
-            animatedImage.sprite = frames[0];
-        }
-
         if (loadingPanel != null)
         {
             loadingPanel.SetActive(true);
         }
 
-        // Zabezpieczamy przed NullReferenceException, sprawdzaj¹c czy zmienne s¹ przypisane
+        // Czekamy jedn¹ klatkê, ¿eby panel siê wyrenderowa³
+        yield return null;
+
+        // Odtwarzamy animacjê OD POCZ¥TKU (i=0)
         if (frames != null && frames.Length > 0 && animatedImage != null)
         {
             float timePerFrame = minimumLoadTime / frames.Length;
             for (int i = 0; i < frames.Length; i++)
-            {
+            {   
                 animatedImage.sprite = frames[i];
-                // U¿ywamy czasu rzeczywistego (odpornego na pauzê / lagi)
                 yield return new WaitForSecondsRealtime(timePerFrame);
             }
         }

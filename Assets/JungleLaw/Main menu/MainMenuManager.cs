@@ -34,12 +34,19 @@ public class MainMenuManager : MonoBehaviour
         {
             SettingsMenu.shouldAutoStartGame = false;
             ShowGameMap();
-            // WY£Aczamy ekrany ³adowania
+            GetComponent<SimpleLoading>().loadingPanel.SetActive(false);
+        }
+        else if (SettingsMenu.returnedFromGame) // ZMIANA: Sprawdzamy czy w³aœnie wyszliœmy z gry
+        {
+            SettingsMenu.returnedFromGame = false; // Resetujemy flagê
+            
+            // Pojawiamy siê w menu natychmiast (bez drugiej animacji!)
+            ShowMainMenu();
             GetComponent<SimpleLoading>().loadingPanel.SetActive(false);
         }
         else
         {
-            // W³¹czamy Loading na samym pocz¹tku klatki Start
+            // W³¹czamy Loading tylko po zwyk³ym uruchomieniu gry (nie po powrocie z meczu)
             SimpleLoading loader = GetComponent<SimpleLoading>();
             loader.loadingPanel.SetActive(true);
             loader.StartStartupLoading();
