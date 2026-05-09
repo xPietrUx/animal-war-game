@@ -16,30 +16,33 @@ public class MainMenuManager : MonoBehaviour
     public GameObject infoPanel;
     public GameObject quitPanel;
 
+    void Awake()
+    {
+        // Gwarantujemy, ¿e interfejs w grze jest absolutnie wy³¹czony zanim "mignie" nam w pierwszej klatce.
+        if (topBar != null) topBar.SetActive(false);
+        if (commandPanel != null) commandPanel.SetActive(false);
+        
+        // Nie wy³¹czamy backgroundu tu jeszcze, jeœli ma stanowiæ t³o, samo ShowMainMenu to obs³u¿y
+        background.SetActive(false);
+        mainMenuContent.SetActive(false);
+        HideAllPanels();
+    }
+
     void Start()
     {
-        // Sprawdzamy, czy przyszliœmy tu z przycisku REPLAY
         if (SettingsMenu.shouldAutoStartGame)
         {
-            // Resetujemy zmienn¹, ¿eby przy kolejnym w³¹czeniu gry nie zapêtli³o auto-startu
             SettingsMenu.shouldAutoStartGame = false;
-
-            // Odpalamy bezpoœrednio mapê (u¿ywaj¹c Twojej funkcji)
             ShowGameMap();
-
-            // Jeœli Twoja gra wymaga specyficznego resetu danych, 
-            // upewnij siê, ¿e ShowGameMap() lub inna funkcja to robi.
+            // WY£Aczamy ekrany ³adowania
+            GetComponent<SimpleLoading>().loadingPanel.SetActive(false);
         }
         else
         {
-            // Standardowy start - pokazujemy menu i animacjê ³adowania
-            if (topBar != null) topBar.SetActive(false);
-            if (commandPanel != null) commandPanel.SetActive(false);
-            background.SetActive(false);
-            mainMenuContent.SetActive(false);
-            HideAllPanels();
-
-            GetComponent<SimpleLoading>().StartStartupLoading();
+            // W³¹czamy Loading na samym pocz¹tku klatki Start
+            SimpleLoading loader = GetComponent<SimpleLoading>();
+            loader.loadingPanel.SetActive(true);
+            loader.StartStartupLoading();
         }
     }
 

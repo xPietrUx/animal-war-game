@@ -8,8 +8,14 @@ public class SettingsMenu : MonoBehaviour
     public GameObject replayConfirmWindow;
     public GameObject quitConfirmWindow;
 
+    // Dodano pole loadingPanel, aby naprawiæ b³¹d CS0103
+    public GameObject loadingPanel;
+
     // Statyczna zmienna, która "prze¿yje" prze³adowanie sceny
     public static bool shouldAutoStartGame = false;
+
+    // Dodano statyczne pole instance
+    public static SettingsMenu instance;
 
     private bool isPaused = false;
 
@@ -21,6 +27,23 @@ public class SettingsMenu : MonoBehaviour
 
         Time.timeScale = 1f;
         isPaused = false;
+    }
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        if (loadingPanel != null && loadingPanel != gameObject)
+            loadingPanel.SetActive(false);
     }
 
     public void TogglePause()
@@ -54,9 +77,19 @@ public class SettingsMenu : MonoBehaviour
 
     public void ConfirmQuitYes()
     {
-        shouldAutoStartGame = false; // Mówimy grze: "Po resecie idŸ do menu"
+        shouldAutoStartGame = false;
         Time.timeScale = 1f;
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+        if (LoadingScreenManager.instance != null)
+        {
+            LoadingScreenManager.instance.gameObject.SetActive(true);
+            LoadingScreenManager.instance.LoadMainMenuAsync();
+        }
+        else
+        {
+            // Zmiana z "MainMenu" na nazwê Twojej w³aœciwej sceny:
+            SceneManager.LoadScene("plansza"); 
+        }
     }
 
     public void ConfirmQuitNo() => quitConfirmWindow.SetActive(false);

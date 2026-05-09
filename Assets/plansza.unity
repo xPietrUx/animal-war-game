@@ -10384,7 +10384,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LoadingScreenManager
   loadingPanel: {fileID: 993677699}
   animatedImage: {fileID: 0}
-  frames: []
+  frames:
+  - {fileID: 21300000, guid: 3eb1061b3cd371a45a4a1bbb4978585a, type: 3}
+  - {fileID: 21300000, guid: 56ee8afe6a71b7a4ab469a52d3b71e24, type: 3}
+  - {fileID: 21300000, guid: d75aac1b7a6fa0b4aaa6bb2504b27112, type: 3}
+  - {fileID: 21300000, guid: 1030820c42eb4ae44b63c12a8df149c3, type: 3}
+  - {fileID: 21300000, guid: 500f3238ae0188e4c96cbb08cbc3bac4, type: 3}
   mainMenuSceneName: MainMenu
   gameSceneName: GameScene
   minimumLoadTime: 1.5
@@ -16050,6 +16055,7 @@ MonoBehaviour:
   pauseOverlay: {fileID: 1290917311}
   replayConfirmWindow: {fileID: 619600265}
   quitConfirmWindow: {fileID: 1664112260}
+  loadingPanel: {fileID: 0}
 --- !u!114 &1468142952
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -29,14 +29,20 @@ public class SimpleLoading : MonoBehaviour
     // --- G£ÓWNA ANIMACJA ---
     private IEnumerator PlayAnimation(bool loadGame)
     {
-        // W³¹czamy czarny ekran
-        loadingPanel.SetActive(true);
+        // 1. Zabezpieczamy "migniêcie" starej klatki przypisuj¹c pierwsz¹ ZANIM w³¹czymy ekran
+        if (frames != null && frames.Length > 0 && animatedImage != null)
+        {
+            animatedImage.sprite = frames[0];
+        }
 
-        // Odtwarzamy 5 klatek
+        // 2. Natychmiastowe w³¹czenie panelu ³adowania z przygotowan¹ 1 klatk¹
+        loadingPanel.SetActive(true);
+        
+        // 3. Odtwarzamy klatki, u¿ywaj¹c czasu niezale¿nego od lagów (Realtime)
         for (int i = 0; i < frames.Length; i++)
         {
             animatedImage.sprite = frames[i];
-            yield return new WaitForSeconds(timePerFrame);
+            yield return new WaitForSecondsRealtime(timePerFrame);
         }
 
         // DECYZJA: Co pokazujemy na koñcu?
@@ -49,7 +55,7 @@ public class SimpleLoading : MonoBehaviour
             GetComponent<MainMenuManager>().ShowMainMenu(); // W³¹cz menu
         }
 
-        // Chowamy sam ekran ³adowania
+        // Chowamy sam ekran ³adowania dopiero, gdy warstwa pod spodem u³o¿y siê poprawnie
         loadingPanel.SetActive(false);
     }
 }
