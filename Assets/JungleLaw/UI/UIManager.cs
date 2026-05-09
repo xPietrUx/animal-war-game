@@ -1,5 +1,5 @@
-using UnityEngine;
-using TMPro; // Ważne dla obsługi TextMeshPro
+using UnityEngine; // WAŻNE: Upewnij się, że masz to na samej górze pliku!
+using TMPro; 
 using UnityEngine.UI;
 using System.Collections;
 
@@ -8,7 +8,7 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance;
     public TextMeshProUGUI manaDisplay; // Tekst wyświetlający ilość many
 
-    [Header("Top Bar")]
+    [Header("Top Bar")] 
     public TextMeshProUGUI blueBaseHPText;
     public TextMeshProUGUI redBaseHPText;
 
@@ -25,7 +25,10 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI costManaText; // Przeciągnij tu swój 'CostManaDisplay'
 
     [Header("Komunikaty Błędów")]
-    public GameObject warningMessageGraphic; // Tu w inspektorze przypniesz swoją grafikę braku kasy
+    public GameObject warningMessageGraphic; 
+
+    // DODANO: Zmienna do zapisywania i bezpiecznego resetowania odliczania
+    private Coroutine warningRoutine;
 
     // Funkcja wywoływana, gdy najeżdżamy na przycisk
     public void UpdateHoverCosts(string goldCost, string manaCost)
@@ -73,14 +76,19 @@ public class UIManager : MonoBehaviour
         if (redBaseHPText != null) redBaseHPText.text = redHP.ToString();
     }
 
-    // Nowa funkcja do pokazywania komunikatu
+    // ZMIENIONO: Bezpieczniejszy sposób kontroli znikającej grafiki
     public void ShowWarningMessage()
     {
         if (warningMessageGraphic != null)
         {
-            // Zatrzymujemy poprzednie odliczanie, jeśli gracz klika bardzo szybko
-            StopCoroutine("HideWarningRoutine"); 
-            StartCoroutine("HideWarningRoutine");
+            // Jeśli odliczanie już trwa, przerywamy je żeby wyzerować czas
+            if (warningRoutine != null)
+            {
+                StopCoroutine(warningRoutine);
+            }
+            
+            // Odpalamy licznik na nowo i zapisujemy go do pamięci
+            warningRoutine = StartCoroutine(HideWarningRoutine());
         }
     }
 
@@ -89,8 +97,8 @@ public class UIManager : MonoBehaviour
     {
         warningMessageGraphic.SetActive(true);
         
-        // Czekamy 2 sekundy (możesz zmienić tę wartość)
-        yield return new WaitForSeconds(2f);
+        // ZMIENIONO: Używamy "Realtime", aby czas mijał nawet jeśli gra laguje
+        yield return new WaitForSecondsRealtime(2f);
         
         warningMessageGraphic.SetActive(false);
     }
