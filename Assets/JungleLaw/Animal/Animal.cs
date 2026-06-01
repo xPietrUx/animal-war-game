@@ -153,28 +153,35 @@ public class Animal : MonoBehaviour
         int dy = Mathf.Abs(targetCell.y - gridPosition.y);
         int dist = dx + dy;
 
+        // Sprawdzamy czy cel jest w zasięgu i czy GridManager pozwala tam wejść
         if (dist <= currentMoveRange && GridManager.Instance.IsTileWalkable(targetCell))
         {
+            // 1. SPRZĄTANIE: Zwalniamy stare pole, żeby nie robiły się "dziury" w zasięgu
+            GridManager.Instance.LeaveTile(gridPosition);
+
+            // 2. RUCH: Aktualizujemy pozycję
             gridPosition = targetCell;
             transform.position = mainGrid.GetCellCenterWorld(gridPosition);
+
+            // 3. REZERWACJA: Zajmujemy nowe pole w GridManagerze
             GridManager.Instance.OccupyTile(gridPosition, this);
 
-            // NOWOŚĆ: Stanęliśmy na nowym polu - przeliczamy otoczenie!
+            // 4. STATYSTYKI: Przeliczamy buffy (np. ze wzgórz)
             RecalculateStats();
 
-            // Odsłanianie mgły (użyje naszego nowego currentVisionRange, który mógł urosnąć od wzgórza!)
-            if (FogOfWarManager.Instance != null) FogOfWarManager.Instance.UpdateFog(this.team);
+            // 5. MGŁA WOJNY: To, o co pytałeś – odsłaniamy teren w nowym miejscu
+            if (FogOfWarManager.Instance != null)
+            {
+                FogOfWarManager.Instance.UpdateFog(this.team);
+            }
         }
 
-        // NOWOŚĆ: Po wykonaniu ruchu powiedz wszystkim budynkom, żeby sprawdziły teren!
+        // 6. BAZY: Niezależnie od tego czy ruch się udał, sprawdzamy kto kontroluje punkty
         CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
         foreach (CapturePoint point in allPoints)
         {
             point.EvaluateControl();
         }
-
-        // Odsłanianie mgły (jeśli masz to zaimplementowane pod ruchem)
-        if (FogOfWarManager.Instance != null) FogOfWarManager.Instance.UpdateFog(this.team);
     }
 
     // --- ŚMIERĆ (ANIMOWANA) ---

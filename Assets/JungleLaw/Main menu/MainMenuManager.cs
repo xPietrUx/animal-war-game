@@ -7,8 +7,8 @@ public class MainMenuManager : MonoBehaviour
     public GameObject mainMenuContent;
 
     [Header("UI GRY (DO UKRYCIA)")]
-    public GameObject topBar;          // Górny pasek z HP
-    public GameObject commandPanel;    // Dolny pasek ze z³otem i jednostkami
+    public GameObject topBar;
+    public GameObject commandPanel;
 
     [Header("PANELE PODSTRON")]
     public GameObject settingsPanel;
@@ -16,25 +16,51 @@ public class MainMenuManager : MonoBehaviour
     public GameObject infoPanel;
     public GameObject quitPanel;
 
-    void Start()
+    void Awake()
     {
-        // 1. Na starcie gry chowamy absolutnie wszystko (paski gry i menu)
+        // Gwarantujemy, ¿e interfejs w grze jest absolutnie wy³¹czony zanim "mignie" nam w pierwszej klatce.
         if (topBar != null) topBar.SetActive(false);
         if (commandPanel != null) commandPanel.SetActive(false);
+        
+        // Nie wy³¹czamy backgroundu tu jeszcze, jeœli ma stanowiæ t³o, samo ShowMainMenu to obs³u¿y
         background.SetActive(false);
         mainMenuContent.SetActive(false);
         HideAllPanels();
-
-        // 2. Odpalamy pocz¹tkow¹ animacjê z drugiego skryptu
-        GetComponent<SimpleLoading>().StartStartupLoading();
     }
 
+    void Start()
+    {
+        if (SettingsMenu.shouldAutoStartGame)
+        {
+            SettingsMenu.shouldAutoStartGame = false;
+            ShowGameMap();
+            GetComponent<SimpleLoading>().loadingPanel.SetActive(false);
+        }
+        else if (SettingsMenu.returnedFromGame) // ZMIANA: Sprawdzamy czy w³aœnie wyszliœmy z gry
+        {
+            SettingsMenu.returnedFromGame = false; // Resetujemy flagê
+            
+            // Pojawiamy siê w menu natychmiast (bez drugiej animacji!)
+            ShowMainMenu();
+            GetComponent<SimpleLoading>().loadingPanel.SetActive(false);
+        }
+        else
+        {
+            // W³¹czamy Loading tylko po zwyk³ym uruchomieniu gry (nie po powrocie z meczu)
+            SimpleLoading loader = GetComponent<SimpleLoading>();
+            loader.loadingPanel.SetActive(true);
+            loader.StartStartupLoading();
+        }
+    }
+
+    // --- TEJ FUNKCJI BRAKOWA£O! ---
     public void ShowMainMenu()
     {
-        // Ta funkcja w³¹czy g³ówne menu po zakoñczeniu animacji startowej
+        // Pokazuje g³ówne t³o i przyciski menu
         background.SetActive(true);
         mainMenuContent.SetActive(true);
     }
+    // ------------------------------
 
     private void HideAllPanels()
     {
@@ -46,14 +72,6 @@ public class MainMenuManager : MonoBehaviour
 
     public void StartGame()
     {
-        // Chowamy menu...
-        //background.SetActive(false);
-        //mainMenuContent.SetActive(false);
-        //HideAllPanels();
-
-        // ...i W£¥CZAMY interfejs gry!
-        //if (topBar != null) topBar.SetActive(true);
-        //if (commandPanel != null) commandPanel.SetActive(true);
         LoadingScreenManager.instance.LoadGameMapAsync();
     }
 
@@ -61,21 +79,20 @@ public class MainMenuManager : MonoBehaviour
     {
         HideAllPanels();
         mainMenuContent.SetActive(true);
-        aboutPanel.SetActive(true); // W³¹cza okno About
+        aboutPanel.SetActive(true);
     }
 
     public void OpenInfo()
     {
         HideAllPanels();
         mainMenuContent.SetActive(true);
-        infoPanel.SetActive(true); // W³¹cza okno Instrukcji
+        infoPanel.SetActive(true);
     }
 
     public void OpenQuitConfirmation()
     {
         HideAllPanels();
-        //mainMenuContent.SetActive(false);
-        quitPanel.SetActive(true); // W³¹cza okno Wyjœcia
+        quitPanel.SetActive(true);
     }
 
     public void BackToMenu()
@@ -86,30 +103,25 @@ public class MainMenuManager : MonoBehaviour
 
     public void OpenGitHub()
     {
-        // Ta funkcja otwiera podany adres URL w domyœlnej przegl¹darce gracza
         Application.OpenURL("https://github.com/xPietrUx/animal-war-game");
     }
 
     public void ConfirmQuit()
     {
         Debug.Log("Gra zosta³a wy³¹czona!");
-        // Zamyka grê u graczy (po zbudowaniu pliku .exe)
         Application.Quit();
 
-        // Odklikuje ikonkê Play tylko w Twoim Unity Editor (dla testów)
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-        #endif
+#endif
     }
 
     public void ShowGameMap()
     {
-        // Chowamy menu...
         background.SetActive(false);
         mainMenuContent.SetActive(false);
         HideAllPanels();
 
-        // ...i W£¥CZAMY interfejs gry!
         if (topBar != null) topBar.SetActive(true);
         if (commandPanel != null) commandPanel.SetActive(true);
     }

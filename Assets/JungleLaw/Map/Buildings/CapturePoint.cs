@@ -11,7 +11,6 @@ public class CapturePoint : MonoBehaviour
     public bool isContested = false;
 
     [Header("Typ Punktu")]
-    // NOWOŚĆ: Przełącznik w Inspektorze!
     public bool isLargeArea = false;
 
     [Header("Ekonomia")]
@@ -19,6 +18,13 @@ public class CapturePoint : MonoBehaviour
     public int manaPerTurn = 2;
     public bool isAttackPoint = true;
     public int damagePerTurn = 5;
+
+    // NOWOŚĆ: Pola na Twoje własne grafiki!
+    [Header("Grafiki Bazy")]
+    public Sprite neutralSprite;
+    public Sprite team1Sprite;
+    public Sprite team2Sprite;
+    public Sprite contestedSprite; // Grafika gdy punkt jest sporny (opcjonalnie)
 
     private SpriteRenderer spriteRenderer;
     private Grid mainGrid;
@@ -31,17 +37,19 @@ public class CapturePoint : MonoBehaviour
 
         if (isLargeArea)
         {
-            // PANCERNA LOGIKA:
-            // Szukamy środków 4 kafelków fizycznie znajdujących się pod budynkiem.
-            // Współrzędne +0.5 i -0.5 celują idealnie w środki kratek!
+            // WYRÓWNANIE: Zanim obliczymy kafelki, "snapujemy" bazę do przecięcia kratek
+            Vector3 currentPos = transform.position;
+            // Zaokrąglamy do pełnych kratek, aby środek bazy 2x2 był zawsze na linii styku
+            transform.position = new Vector3(Mathf.Round(currentPos.x), Mathf.Round(currentPos.y), 0);
+
             Vector3 center = transform.position;
 
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, -0.5f, 0))); // Lewy Dół
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, -0.5f, 0)));  // Prawy Dół
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, 0.5f, 0)));  // Lewy Góra
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, 0.5f, 0)));   // Prawy Góra
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, -0.5f, 0)));
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, -0.5f, 0)));
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, 0.5f, 0)));
+            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, 0.5f, 0)));
 
-            gridPosition = areaPositions[0]; // Baza dla Mgły Wojny
+            gridPosition = areaPositions[0];
         }
         else
         {
@@ -50,24 +58,18 @@ public class CapturePoint : MonoBehaviour
             areaPositions.Add(gridPosition);
         }
 
-        UpdateColor();
+        UpdateVisuals();
     }
 
-    // ==========================================
-    // NOWOŚĆ: MAGIA DLA DEVELOPERA (Wizualizacja)
-    // ==========================================
     private void OnDrawGizmosSelected()
     {
-        // Ta funkcja rysuje kształty w edytorze TYLKO gdy klikniesz budynek
         if (Application.isPlaying && areaPositions.Count > 0)
         {
             Grid grid = FindFirstObjectByType<Grid>();
             if (grid == null) return;
 
-            // Ustawiamy "farbę" na rzucający się w oczy fioletowy kolor
             Gizmos.color = Color.magenta;
 
-            // Rysujemy kuleczki dokładnie tam, gdzie skanuje nasz Radar!
             foreach (Vector3Int pos in areaPositions)
             {
                 Vector3 cellCenter = grid.GetCellCenterWorld(pos);
@@ -81,13 +83,11 @@ public class CapturePoint : MonoBehaviour
         int p1Units = 0;
         int p2Units = 0;
 
-        // Szukamy kto stoi na naszym wyznaczonym terenie
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal a in allAnimals)
         {
             if (!a.enabled) continue;
 
-            // Kod działa identycznie dla 1 jak i 4 kafelków!
             if (areaPositions.Contains(a.gridPosition))
             {
                 if (a.team == 1) p1Units++;
@@ -95,7 +95,6 @@ public class CapturePoint : MonoBehaviour
             }
         }
 
-        // LOGIKA KONTROLI TERYTORIUM
         if (p1Units > 0 && p2Units > 0)
         {
             isContested = true;
@@ -113,11 +112,16 @@ public class CapturePoint : MonoBehaviour
         }
         else
         {
-            // Nikogo tu nie ma, zachowujemy status quo
+            // Nikt nie stoi na punkcie
             isContested = false;
+
+            // DODAJ TO: Resetujemy właściciela na 0 (neutralny)
+            ownerTeam = 0;
+
+            Debug.Log("Punkt jest teraz pusty i neutralny.");
         }
 
-        UpdateColor();
+        UpdateVisuals();
     }
 
     private void Capture(int newOwner)
@@ -126,16 +130,30 @@ public class CapturePoint : MonoBehaviour
         Debug.Log($"Punkt przejęty przez Gracza {ownerTeam}!");
     }
 
-    private void UpdateColor()
+    // ZMIENIONO: Teraz podmienia Sprite'y zamiast tylko kolorować kwadrat
+    private void UpdateVisuals()
     {
+        // Upewniamy się, że kolor to czysty biały, aby Twoje grafiki miały swoje naturalne kolory
+        spriteRenderer.color = Color.white;
+
         if (isContested)
         {
-            spriteRenderer.color = Color.yellow;
+            if (contestedSprite != null) spriteRenderer.sprite = contestedSprite;
+            else spriteRenderer.color = Color.yellow; // Zapasowe zachowanie, gdyby brakło grafiki
             return;
         }
 
-        if (ownerTeam == 0) spriteRenderer.color = Color.white;
-        else if (ownerTeam == 1) spriteRenderer.color = Color.blue;
-        else if (ownerTeam == 2) spriteRenderer.color = Color.red;
+        if (ownerTeam == 0)
+        {
+            if (neutralSprite != null) spriteRenderer.sprite = neutralSprite;
+        }
+        else if (ownerTeam == 1)
+        {
+            if (team1Sprite != null) spriteRenderer.sprite = team1Sprite;
+        }
+        else if (ownerTeam == 2)
+        {
+            if (team2Sprite != null) spriteRenderer.sprite = team2Sprite;
+        }
     }
 }

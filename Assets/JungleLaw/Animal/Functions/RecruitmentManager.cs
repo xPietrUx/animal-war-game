@@ -47,7 +47,11 @@ public class RecruitmentManager : MonoBehaviour
                 SpawnUnit(prefabToSpawn, p1SpawnPoint, 1);
                 UIManager.Instance.UpdateTurnInfo("PLAYER 1", TurnManager.Instance.p1_Gold, TurnManager.Instance.currentGoldIncome, TurnManager.Instance.p1_Mana, TurnManager.Instance.currentManaIncome);
             }
-            else Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
+            else 
+            {
+                Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
+                UIManager.Instance.ShowWarningMessage(); // Wywołujemy naszą nową funkcję UI
+            }
         }
         // KTO KUPUJE? Player 2
         else if (TurnManager.Instance.currentTurn == TurnManager.TurnState.Player2)
@@ -60,7 +64,11 @@ public class RecruitmentManager : MonoBehaviour
                 SpawnUnit(prefabToSpawn, p2SpawnPoint, 2);
                 UIManager.Instance.UpdateTurnInfo("PLAYER 2", TurnManager.Instance.p2_Gold, TurnManager.Instance.currentGoldIncome, TurnManager.Instance.p2_Mana, TurnManager.Instance.currentManaIncome);
             }
-            else Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
+            else 
+            {
+                Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
+                UIManager.Instance.ShowWarningMessage(); // Wywołujemy naszą nową funkcję UI
+            }
         }
     }
 

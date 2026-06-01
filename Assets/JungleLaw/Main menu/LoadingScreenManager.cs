@@ -13,7 +13,7 @@ public class LoadingScreenManager : MonoBehaviour
     public Sprite[] frames;
 
     [Header("Ustawienia scen")]
-    public string mainMenuSceneName = "MainMenu";
+    public string mainMenuSceneName = "plansza";
     public string gameSceneName = "GameScene";
 
     [Header("Czas trwania (Sekundy)")]
@@ -23,80 +23,80 @@ public class LoadingScreenManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null) { instance = this; DontDestroyOnLoad(gameObject); }
-        else { Destroy(gameObject); return; }
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        loadingPanel.SetActive(false);
+        if (loadingPanel != null)
+            loadingPanel.SetActive(false);
     }
 
     public void LoadMainMenuAsync()
     {
-        StartCoroutine(LoadSceneCoroutine(mainMenuSceneName));
+        // Ignorujemy zapisan¹ w edytorze wartoœæ i wymuszamy poprawn¹ nazwê
+        StartCoroutine(LoadSceneCoroutine("plansza"));
     }
 
     public void LoadGameMapAsync()
     {
         Debug.Log("PUK PUK! Przycisk wywo³a³ LoadingScreenManager!");
+        
+        // Zatrzymujemy korutynê SimpleLoading
+        SimpleLoading simpleLoading = GetComponent<SimpleLoading>();
+        if (simpleLoading != null)
+        {
+            simpleLoading.StopAllCoroutines();
+            if (simpleLoading.loadingPanel != null)
+                simpleLoading.loadingPanel.SetActive(false);
+        }
+        
         StartCoroutine(LoadSceneCoroutine(gameSceneName));
     }
 
     private IEnumerator LoadSceneCoroutine(string sceneToLoad)
     {
-        loadingPanel.SetActive(true);
-
-        if (frames.Length > 0)
+        if (loadingPanel != null)
         {
-            animatedImage.sprite = frames[0];
-            Debug.Log("ANIMACJA START: Klatka 1"); // Log startowy
+            loadingPanel.SetActive(true);
         }
 
-        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneToLoad);
-        operation.allowSceneActivation = false;
+        // Czekamy jedn¹ klatkê, ¿eby panel siê wyrenderowa³
+        yield return null;
 
-        float elapsedTime = 0f;
-
-        while (!operation.isDone)
+        // Odtwarzamy animacjê OD POCZ¥TKU (i=0)
+        if (frames != null && frames.Length > 0 && animatedImage != null)
         {
-            elapsedTime += Time.deltaTime;
-
-            // 1. Prawdziwy postêp wczytywania plików przez Unity (0.0 do 1.0)
-            float loadProgress = Mathf.Clamp01(operation.progress / 0.9f);
-
-            // 2. Nasz sztuczny stoper (0.0 do 1.0 przez okreœlony czas, np. 1.5 sek)
-            float timeProgress = Mathf.Clamp01(elapsedTime / minimumLoadTime);
-
-            // Wybieramy MNIEJSZ¥ wartoœæ. 
-            // Dziêki temu nawet jak gra wgra siê w 0.1s, animacja grzecznie poczeka na stoper.
-            float currentProgress = Mathf.Min(loadProgress, timeProgress);
-
-            if (frames.Length > 0)
-            {
-                int currentFrame = Mathf.FloorToInt(currentProgress * (frames.Length - 1));
-
-                // Aktualizujemy grafikê i LOGUJEMY tylko w momencie zmiany klatki
-                if (animatedImage.sprite != frames[currentFrame])
-                {
-                    animatedImage.sprite = frames[currentFrame];
-                    Debug.Log("ZMIANA ANIMACJI: Wyœwietlam klatkê " + (currentFrame + 1));
-                }
+            float timePerFrame = minimumLoadTime / frames.Length;
+            for (int i = 0; i < frames.Length; i++)
+            {   
+                animatedImage.sprite = frames[i];
+                yield return new WaitForSecondsRealtime(timePerFrame);
             }
+        }
 
-            // Pozwalamy wejœæ do gry dopiero, gdy i pliki siê wgra³y, i stoper dobi³ do koñca
-            if (loadProgress >= 1f && timeProgress >= 1f)
-            {
-                if (frames.Length > 0 && animatedImage.sprite != frames[frames.Length - 1])
-                {
-                    animatedImage.sprite = frames[frames.Length - 1];
-                    Debug.Log("ANIMACJA KONIEC: Ostatnia klatka");
-                }
-
-                yield return new WaitForSeconds(0.4f);
-                operation.allowSceneActivation = true;
-            }
-
+        // Dopiero po animacji uruchamiamy asynchroniczne ³adowanie sceny
+        AsyncOperation operation = SceneManager.LoadSceneAsync(sceneToLoad);
+        
+        while (operation != null && !operation.isDone)
+        {
             yield return null;
         }
 
-        loadingPanel.SetActive(false);
+        if (loadingPanel != null)
+        {
+            loadingPanel.SetActive(false);
+        }
+    }
+
+    public IEnumerator LoadScenePublicCoroutine(string sceneToLoad)
+    {
+        return LoadSceneCoroutine(sceneToLoad);
     }
 }
