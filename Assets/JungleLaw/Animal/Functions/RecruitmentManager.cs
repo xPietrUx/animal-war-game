@@ -47,7 +47,7 @@ public class RecruitmentManager : MonoBehaviour
                 SpawnUnit(prefabToSpawn, p1SpawnPoint, 1);
                 UIManager.Instance.UpdateTurnInfo("PLAYER 1", TurnManager.Instance.p1_Gold, TurnManager.Instance.currentGoldIncome, TurnManager.Instance.p1_Mana, TurnManager.Instance.currentManaIncome);
             }
-            else 
+            else
             {
                 Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
                 UIManager.Instance.ShowWarningMessage(); // Wywołujemy naszą nową funkcję UI
@@ -64,11 +64,15 @@ public class RecruitmentManager : MonoBehaviour
                 SpawnUnit(prefabToSpawn, p2SpawnPoint, 2);
                 UIManager.Instance.UpdateTurnInfo("PLAYER 2", TurnManager.Instance.p2_Gold, TurnManager.Instance.currentGoldIncome, TurnManager.Instance.p2_Mana, TurnManager.Instance.currentManaIncome);
             }
-            else 
+            else
             {
                 Debug.LogWarning("Za mało złota/many lub punkt spawnu jest zajęty!");
                 UIManager.Instance.ShowWarningMessage(); // Wywołujemy naszą nową funkcję UI
             }
+        }
+        if (UIManager.Instance != null && UIManager.Instance.clickSound != null)
+        {
+            UIManager.Instance.PlaySFX(UIManager.Instance.clickSound);
         }
     }
 

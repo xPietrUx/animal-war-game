@@ -7,8 +7,11 @@ public class WeatherManager : MonoBehaviour
     public enum WeatherCondition { Clear, Rain }
     public WeatherCondition currentWeather = WeatherCondition.Clear;
 
-    // Możesz tu podpiąć system cząsteczek deszczu (Particle System) z Hierarchy
+    [Header("Wizualia i Audio")]
     public GameObject rainParticles;
+
+    // TUTAJ BYŁ BRAK: Deklarujemy zmienną globalną dla głośnika deszczu
+    public AudioSource rainAudioSource;
 
     private void Awake() => Instance = this;
 
@@ -17,21 +20,26 @@ public class WeatherManager : MonoBehaviour
         currentWeather = newWeather;
         Debug.Log($"ZMIANA POGODY: {currentWeather}");
 
-        // Włącz/wyłącz wizualny deszcz na ekranie
+        // Włączanie/wyłączanie cząsteczek deszczu
         if (rainParticles != null)
         {
             rainParticles.SetActive(currentWeather == WeatherCondition.Rain);
         }
 
-        // Powiadom wszystkie zwierzęta na mapie, że pogoda się zmieniła!
+        // Kontrola dźwięku deszczu (Linie 26-31, które zgłaszały błąd)
+        if (rainAudioSource != null)
+        {
+            if (currentWeather == WeatherCondition.Rain)
+                rainAudioSource.Play(); // Start odtwarzania w pętli
+            else
+                rainAudioSource.Stop(); // Wyciszenie ulewy
+        }
+
+        // Powiadomienie jednostek na mapie o zmianie statystyk
         Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
         foreach (Animal a in allAnimals)
         {
-            a.ApplyWeather(currentWeather);
+            a.RecalculateStats();
         }
-
-        // Odśwież mgłę wojny od razu po zmianie wizji
-        int currentTurnTeam = (TurnManager.Instance.currentTurn == TurnManager.TurnState.Player1) ? 1 : 2;
-        if (FogOfWarManager.Instance != null) FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
     }
 }
