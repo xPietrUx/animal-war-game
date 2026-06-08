@@ -128,6 +128,10 @@ public class CapturePoint : MonoBehaviour
     {
         ownerTeam = newOwner;
         Debug.Log($"Punkt przejęty przez Gracza {ownerTeam}!");
+        if (UIManager.Instance != null && UIManager.Instance.coinSound != null)
+        {
+            UIManager.Instance.PlaySFX(UIManager.Instance.coinSound);
+        }
     }
 
     // ZMIENIONO: Teraz podmienia Sprite'y zamiast tylko kolorować kwadrat

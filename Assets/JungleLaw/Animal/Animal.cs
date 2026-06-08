@@ -95,6 +95,8 @@ public class Animal : MonoBehaviour
         if (isDead) return; // Jeśli już umiera, nie przyjmuj więcej obrażeń
 
         currentHP -= amount;
+        // Odpal dźwięk bólu!
+        if (UIManager.Instance != null) UIManager.Instance.PlaySFX(UIManager.Instance.hurtSound);
         UpdateHealthBar();
         Debug.Log($"{data.speciesName} oberwał za {amount}. Zostało HP: {currentHP}");
 
@@ -136,6 +138,8 @@ public class Animal : MonoBehaviour
 
     private void Die()
     {
+        // Odpal dźwięk śmierci!
+        if (UIManager.Instance != null) UIManager.Instance.PlaySFX(UIManager.Instance.deadSound);
         // 1. ZATRZYMUJEMY inne procesy (np. zmianę miny na Surprise)
         StopAllCoroutines();
         isDead = true;
@@ -165,6 +169,7 @@ public class Animal : MonoBehaviour
 
             // 3. REZERWACJA: Zajmujemy nowe pole w GridManagerze
             GridManager.Instance.OccupyTile(gridPosition, this);
+            if (UIManager.Instance != null) UIManager.Instance.PlaySFX(UIManager.Instance.jumpSound);
 
             // 4. STATYSTYKI: Przeliczamy buffy (np. ze wzgórz)
             RecalculateStats();

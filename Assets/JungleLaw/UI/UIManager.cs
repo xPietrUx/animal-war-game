@@ -1,5 +1,5 @@
 using UnityEngine; // WAŻNE: Upewnij się, że masz to na samej górze pliku!
-using TMPro; 
+using TMPro;
 using UnityEngine.UI;
 using System.Collections;
 
@@ -8,7 +8,25 @@ public class UIManager : MonoBehaviour
     public static UIManager Instance;
     public TextMeshProUGUI manaDisplay; // Tekst wyświetlający ilość many
 
-    [Header("Top Bar")] 
+    [Header("Audio System (SFX)")]
+    public AudioSource sfxSource; // Głośnik do strzałów/kliknięć
+
+    // Taśmy z nagraniami
+    public AudioClip coinSound;
+    public AudioClip clickSound;
+    public AudioClip hurtSound;
+    public AudioClip deadSound;
+    public AudioClip jumpSound;
+
+    public void PlaySFX(AudioClip clip)
+    {
+        if (sfxSource != null && clip != null)
+        {
+            sfxSource.PlayOneShot(clip);
+        }
+    }
+
+    [Header("Top Bar")]
     public TextMeshProUGUI blueBaseHPText;
     public TextMeshProUGUI redBaseHPText;
 
@@ -25,7 +43,7 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI costManaText; // Przeciągnij tu swój 'CostManaDisplay'
 
     [Header("Komunikaty Błędów")]
-    public GameObject warningMessageGraphic; 
+    public GameObject warningMessageGraphic;
 
     // DODANO: Zmienna do zapisywania i bezpiecznego resetowania odliczania
     private Coroutine warningRoutine;
@@ -86,7 +104,7 @@ public class UIManager : MonoBehaviour
             {
                 StopCoroutine(warningRoutine);
             }
-            
+
             // Odpalamy licznik na nowo i zapisujemy go do pamięci
             warningRoutine = StartCoroutine(HideWarningRoutine());
         }
@@ -96,10 +114,10 @@ public class UIManager : MonoBehaviour
     private IEnumerator HideWarningRoutine()
     {
         warningMessageGraphic.SetActive(true);
-        
+
         // ZMIENIONO: Używamy "Realtime", aby czas mijał nawet jeśli gra laguje
         yield return new WaitForSecondsRealtime(2f);
-        
+
         warningMessageGraphic.SetActive(false);
     }
 }
