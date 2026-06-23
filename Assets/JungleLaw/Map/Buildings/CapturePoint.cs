@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 public class CapturePoint : MonoBehaviour
 {
-    // PRZYWRÓCONO: Główna pozycja, by Mgła Wojny znowu działała!
     public Vector3Int gridPosition;
     public List<Vector3Int> areaPositions = new List<Vector3Int>();
 
@@ -19,12 +18,11 @@ public class CapturePoint : MonoBehaviour
     public bool isAttackPoint = true;
     public int damagePerTurn = 5;
 
-    // NOWOŚĆ: Pola na Twoje własne grafiki!
     [Header("Grafiki Bazy")]
     public Sprite neutralSprite;
     public Sprite team1Sprite;
     public Sprite team2Sprite;
-    public Sprite contestedSprite; // Grafika gdy punkt jest sporny (opcjonalnie)
+    public Sprite contestedSprite;
 
     private SpriteRenderer spriteRenderer;
     private Grid mainGrid;
@@ -37,9 +35,7 @@ public class CapturePoint : MonoBehaviour
 
         if (isLargeArea)
         {
-            // WYRÓWNANIE: Zanim obliczymy kafelki, "snapujemy" bazę do przecięcia kratek
             Vector3 currentPos = transform.position;
-            // Zaokrąglamy do pełnych kratek, aby środek bazy 2x2 był zawsze na linii styku
             transform.position = new Vector3(Mathf.Round(currentPos.x), Mathf.Round(currentPos.y), 0);
 
             Vector3 center = transform.position;
@@ -112,52 +108,81 @@ public class CapturePoint : MonoBehaviour
         }
         else
         {
-            // Nikt nie stoi na punkcie
+            // POPRAWKA 1: Nikt nie stoi na punkcie
             isContested = false;
 
-            // DODAJ TO: Resetujemy właściciela na 0 (neutralny)
-            ownerTeam = 0;
+            // USUNIĘTO: ownerTeam = 0; 
+            // Dzięki temu punkt stabilnie pamięta swojego ostatniego właściciela!
 
-            Debug.Log("Punkt jest teraz pusty i neutralny.");
+            Debug.Log($"Punkt jest pusty, ale zostaje pod kontrolą Gracza: {ownerTeam}");
         }
 
         UpdateVisuals();
     }
 
-    private void Capture(int newOwner)
+    // POPRAWKA 2: Zmieniono z 'private' na 'public', aby zapobiec błędowi CS0122 w Animal.cs
+    public void Capture(int newOwner)
     {
         ownerTeam = newOwner;
         Debug.Log($"Punkt przejęty przez Gracza {ownerTeam}!");
+
         if (UIManager.Instance != null && UIManager.Instance.coinSound != null)
         {
             UIManager.Instance.PlaySFX(UIManager.Instance.coinSound);
         }
+
+        // DODAJ TO TUTAJ: Zabezpieczenie wizualne przy każdym udanym przejęciu
+        UpdateVisuals();
     }
 
-    // ZMIENIONO: Teraz podmienia Sprite'y zamiast tylko kolorować kwadrat
     private void UpdateVisuals()
     {
-        // Upewniamy się, że kolor to czysty biały, aby Twoje grafiki miały swoje naturalne kolory
-        spriteRenderer.color = Color.white;
+        // Usunęliśmy bezwarunkowe 'spriteRenderer.color = Color.white' z samej góry!
 
+        // STAN 1: PUNKT SPORNY (WALKA)
         if (isContested)
         {
+            spriteRenderer.color = Color.white; // Czyścimy pod sprajt
             if (contestedSprite != null) spriteRenderer.sprite = contestedSprite;
-            else spriteRenderer.color = Color.yellow; // Zapasowe zachowanie, gdyby brakło grafiki
+            else spriteRenderer.color = Color.yellow; // Zapasowy żółty, gdy brak grafiki
             return;
         }
 
+        // STAN 2: PUNKT NEUTRALNY
         if (ownerTeam == 0)
         {
+            spriteRenderer.color = Color.white;
             if (neutralSprite != null) spriteRenderer.sprite = neutralSprite;
+            else spriteRenderer.color = Color.white; // Zapasowy biały
         }
+        // STAN 3: PRZEJĘTY PRZEZ GRACZA 1 (SOJUSZNIK / NIEBIESKI)
         else if (ownerTeam == 1)
         {
-            if (team1Sprite != null) spriteRenderer.sprite = team1Sprite;
+            if (team1Sprite != null)
+            {
+                spriteRenderer.color = Color.white; // Jeśli jest sprajt, resetujemy barwę filtru na białą
+                spriteRenderer.sprite = team1Sprite;
+            }
+            else
+            {
+                // KOD ZAPASOWY: Jeśli nie wrzuciłeś grafiki w Inspektorze, 
+                // system pomaluje kwadrat na ładny niebieski kolor!
+                spriteRenderer.color = new Color(0.2f, 0.6f, 1f);
+            }
         }
+        // STAN 4: PRZEJĘTY PRZEZ GRACZA 2 (PRZECIWNIK / CZERWONY)
         else if (ownerTeam == 2)
         {
-            if (team2Sprite != null) spriteRenderer.sprite = team2Sprite;
+            if (team2Sprite != null)
+            {
+                spriteRenderer.color = Color.white;
+                spriteRenderer.sprite = team2Sprite;
+            }
+            else
+            {
+                // KOD ZAPASOWY: Zastępczy jasnoczerwony dla przeciwnika
+                spriteRenderer.color = new Color(1f, 0.3f, 0.3f);
+            }
         }
     }
 }
