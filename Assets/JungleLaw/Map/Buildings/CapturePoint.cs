@@ -35,17 +35,22 @@ public class CapturePoint : MonoBehaviour
 
         if (isLargeArea)
         {
+            // 1. Wyrównujemy pozycję bazy do najbliższych osi przecięcia siatki
             Vector3 currentPos = transform.position;
             transform.position = new Vector3(Mathf.Round(currentPos.x), Mathf.Round(currentPos.y), 0);
 
-            Vector3 center = transform.position;
+            // 2. Pobieramy centralną komórkę siatki (czysta pozycja bez ułamków)
+            Vector3Int baseCell = mainGrid.WorldToCell(transform.position);
 
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, -0.5f, 0)));
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, -0.5f, 0)));
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(-0.5f, 0.5f, 0)));
-            areaPositions.Add(mainGrid.WorldToCell(center + new Vector3(0.5f, 0.5f, 0)));
+            // 3. POPRAWKA: Dodajemy 4 kafelki wokół punktu przy użyciu czystych przesunięć całkowitych.
+            // Koniec z ułamkami typu 0.5f – ten sposób jest w 100% odporny na błędy Unity!
+            areaPositions.Add(baseCell);                               // Górny prawy (0, 1)
+            areaPositions.Add(baseCell + new Vector3Int(-1, 0, 0));    // Górny lewy  (-1, 1)
+            areaPositions.Add(baseCell + new Vector3Int(0, -1, 0));    // Dolny prawy  (0, 0)
+            areaPositions.Add(baseCell + new Vector3Int(-1, -1, 0));   // Dolny lewy   (-1, 0)
 
-            gridPosition = areaPositions[0];
+            // Przypisujemy punkt główny jako lewy dolny kafelek (zgodnie z Twoim Inspektorem)
+            gridPosition = baseCell + new Vector3Int(-1, -1, 0);
         }
         else
         {

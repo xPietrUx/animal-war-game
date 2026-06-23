@@ -163,20 +163,13 @@ public class Animal : MonoBehaviour
                 FogOfWarManager.Instance.UpdateFog(this.team);
             }
 
-            // POPRAWKA 3: PRZESUNIĘCIE LOGIKI PRZEJĘĆ
-            // Zamiast bezwarunkowo resetować wszystkie punkty na mapie, szukamy 
-            // czy na kafelku, na którym WŁAŚNIE STANĘLIŚMY, znajduje się punkt.
-            // Jeśli Twój GridManager posiada taką funkcję lub punkty mają Collidery typu Trigger, 
-            // punkt wywoła swoją wewnętrzną funkcję Capture(this.team) i zapisze stan na stałe.
+            // POPRAWKA: Usuwamy warunek "if (point.gridPosition == this.gridPosition)".
+            // Teraz bezwarunkowo zmuszamy każdy punkt na mapie do odpalenia EvaluateControl().
+            // Skrypt punktu sam przeszuka swoją listę 'areaPositions' i wykryje Małpkę!
             CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
             foreach (CapturePoint point in allPoints)
             {
-                // Jeśli koordynaty punktu zgadzają się z naszą nową pozycją -> przejmujemy go!
-                // (Zakładam, że CapturePoint ma zmienną gridPosition lub pobiera ją w Start)
-                if (point.gridPosition == this.gridPosition)
-                {
-                    point.Capture(this.team);
-                }
+                point.EvaluateControl();
             }
         }
     }
