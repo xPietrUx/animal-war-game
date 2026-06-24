@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd91f4d3a0ee224ca2eb06d2ab35140, type: 3}
+  m_Name: Rabbit_Data
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalData
+  speciesName: Rabbit
+  moveRange: 3
+  attackRange: 1
+  visionRange: 6
+  maxHP: 50
+  maxAttack: 65
+  cost: 80
+  manaCost: 10
+  idleSprite: {fileID: -5362292703166988329, guid: 7dbab09524da86745b91812796c2cb03, type: 3}
+  angrySprite: {fileID: -2847090396340221084, guid: 25751e1b227c5ee4d9f7db62ca5740f3, type: 3}
+  surpriseSprite: {fileID: -3298776346213109211, guid: 3ae34e81fd5296f4d985d33b67c6694d, type: 3}
+  deathFrames:
+  - {fileID: -3337563009808695810, guid: 5a5b562525688d1469405919448cc50c, type: 3}
+  - {fileID: -3720206434738351844, guid: a7432da30321b0b4bac67d98e2bdd710, type: 3}
+  - {fileID: 4212224586744252847, guid: 5766cb3d2e210a64a96fcde2c2bbfe4b, type: 3}
+  - {fileID: 8218753920421436155, guid: cd48ca5414670994c9e95319b016a513, type: 3}
+  - {fileID: -691703648974504997, guid: 8101560986b4e6e42bbb67384244d198, type: 3}
+  graveSprite: {fileID: -9152214796969299091, guid: ebe5ef5ef3ab10e44a64fa3c641f8e8e, type: 3}

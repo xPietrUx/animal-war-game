@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2dd91f4d3a0ee224ca2eb06d2ab35140, type: 3}
+  m_Name: Cat_Data
+  m_EditorClassIdentifier: Assembly-CSharp::AnimalData
+  speciesName: Cat
+  moveRange: 2
+  attackRange: 2
+  visionRange: 4
+  maxHP: 150
+  maxAttack: 15
+  cost: 60
+  manaCost: 0
+  idleSprite: {fileID: 2901277398537777461, guid: b14b0f0be9bc13545968b2587d4d391b, type: 3}
+  angrySprite: {fileID: -6716435741981861814, guid: 909ffccce0851744bb37ca2c25db101b, type: 3}
+  surpriseSprite: {fileID: -6511253801933581063, guid: aa9db5413b40efc4fa462ba984e470a7, type: 3}
+  deathFrames:
+  - {fileID: -8857846866928009903, guid: aba50fa04ae537841b0fb6276bb7c474, type: 3}
+  - {fileID: -899539408637926469, guid: 065e1b1715c91114ea469f49d62c3166, type: 3}
+  - {fileID: -1100506892120742953, guid: d2c13f0679068624cb18adccb4e5e436, type: 3}
+  - {fileID: -7928812520351500819, guid: 7f9937dcdfd93c741adf34d0280f2f67, type: 3}
+  - {fileID: 3731525383867679706, guid: 8cdb8e6ee5fcba84896de4e082b6e74f, type: 3}
+  graveSprite: {fileID: -9152214796969299091, guid: ebe5ef5ef3ab10e44a64fa3c641f8e8e, type: 3}

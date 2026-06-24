@@ -1,0 +1,177 @@
+using UnityEngine;
+using System.Collections; // DODANO: Wymagane do obsługi IEnumerator (Coroutiny)
+using System.Collections.Generic;
+
+public class TurnManager : MonoBehaviour
+{
+    public static TurnManager Instance;
+
+    public enum TurnState { Player1, Player2 }
+    public TurnState currentTurn;
+
+    [Header("Player 1 Stats")]
+    public int p1_HP = 100;
+    public int p1_Gold = 50;
+
+    [Header("Player 2 Stats")]
+    public int p2_HP = 100;
+    public int p2_Gold = 50;
+
+    [Header("Mana")]
+    public int p1_Mana = 0;
+    public int p2_Mana = 0;
+    public int baseManaPerTurn = 1;
+
+    [Header("Economy")]
+    public int baseGoldPerTurn = 30;
+    [HideInInspector] public int currentGoldIncome;
+    [HideInInspector] public int currentManaIncome;
+
+    // NOWOŚĆ: Strażnik pierwszej rundy
+    private bool isFirstTurn = true;
+
+    private void Awake() => Instance = this;
+
+    void Start()
+    {
+        currentTurn = TurnState.Player1;
+
+        // POPRAWKA: Zamiast odpalania gry natychmiast, uruchamiamy asynchroniczne czekanie
+        StartCoroutine(WaitAndStartFirstTurn());
+    }
+
+    // NOWOŚĆ: Współprogram gwarantujący bezpieczny start
+    private IEnumerator WaitAndStartFirstTurn()
+    {
+        // Czekamy, aż absolutnie każdy obiekt na scenie wykona swoją funkcję Start() i SnapToGrid()
+        yield return new WaitForEndOfFrame();
+
+        Debug.Log("Wszystkie skrypty gotowe. Oficjalnie zaczynamy pierwszą turę!");
+        StartTurn();
+    }
+
+    public void EndTurn()
+    {
+        if (p1_HP <= 0 || p2_HP <= 0) return;
+
+        currentTurn = (currentTurn == TurnState.Player1) ? TurnState.Player2 : TurnState.Player1;
+
+        Debug.Log("Teraz tura: " + currentTurn);
+        StartTurn();
+    }
+
+    private void StartTurn()
+    {
+        // POPRAWKA: Losowanie pogody z blokadą pierwszej rundy
+        if (currentTurn == TurnState.Player1)
+        {
+            if (isFirstTurn)
+            {
+                // Pierwsza runda: Zawsze wymuszamy piękne, czyste słońce
+                WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Clear);
+                isFirstTurn = false; // Brama zamknięta – kolejne rundy będą już losowane!
+            }
+            else
+            {
+                // Kolejne dni: Standardowe 20% szans na deszcz
+                if (Random.Range(0, 100) < 20)
+                    WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Rain);
+                else
+                    WeatherManager.Instance.ChangeWeather(WeatherManager.WeatherCondition.Clear);
+            }
+        }
+
+        // 1. ZRESETUJ JEDNOSTKI I ZAKTUALIZUJ ICH KOLORY
+        Animal[] allAnimals = Object.FindObjectsByType<Animal>(FindObjectsSortMode.None);
+        foreach (Animal a in allAnimals)
+        {
+            a.ResetTurn();
+            a.UpdateAllegianceColor();
+        }
+
+        // 2. ZBIERZ ZŁOTO, MANĘ I ZADAJ OBRAŻENIA BAZOM
+        currentGoldIncome = baseGoldPerTurn;
+        currentManaIncome = baseManaPerTurn;
+
+        CalculateBaseDamage();
+
+        // 3. DODAJ ZASOBY I ZAKTUALIZUJ UI
+        if (currentTurn == TurnState.Player1)
+        {
+            p1_Gold += currentGoldIncome;
+            p1_Mana += currentManaIncome;
+            UIManager.Instance.UpdateTurnInfo("PLAYER 1", p1_Gold, currentGoldIncome, p1_Mana, currentManaIncome);
+        }
+        else
+        {
+            p2_Gold += currentGoldIncome;
+            p2_Mana += currentManaIncome;
+            UIManager.Instance.UpdateTurnInfo("PLAYER 2", p2_Gold, currentGoldIncome, p2_Mana, currentManaIncome);
+        }
+
+        UIManager.Instance.UpdateBaseHP(p1_HP, p2_HP);
+
+        // 4. SPRAWDZENIE WARUNKU ZWYCIĘSTWA
+        CheckWinCondition();
+
+        int currentTurnTeam = (currentTurn == TurnState.Player1) ? 1 : 2;
+
+        // Dzięki 'WaitForEndOfFrame' te wywołanie zobaczy prawidłowe pozycje zwierząt!
+        if (FogOfWarManager.Instance != null)
+        {
+            FogOfWarManager.Instance.UpdateFog(currentTurnTeam);
+        }
+    }
+
+    private void CalculateBaseDamage()
+    {
+        CapturePoint[] allPoints = Object.FindObjectsByType<CapturePoint>(FindObjectsSortMode.None);
+
+        foreach (CapturePoint point in allPoints)
+        {
+            if (point.isContested) continue;
+
+            if (point.ownerTeam == 1 && currentTurn == TurnState.Player1)
+            {
+                currentGoldIncome += point.goldPerTurn;
+                currentManaIncome += point.manaPerTurn;
+                if (point.isAttackPoint) p2_HP -= point.damagePerTurn;
+            }
+            else if (point.ownerTeam == 2 && currentTurn == TurnState.Player2)
+            {
+                currentGoldIncome += point.goldPerTurn;
+                currentManaIncome += point.manaPerTurn;
+                if (point.isAttackPoint) p1_HP -= point.damagePerTurn;
+            }
+        }
+    }
+
+    private void CheckWinCondition()
+    {
+        Debug.Log($"Sprawdzanie stanu bazy: P1 HP = {p1_HP}, P2 HP = {p2_HP}");
+
+        if (GameOverManager.Instance == null)
+        {
+            Debug.LogError("BRAK INSTANCJI GameOverManager!");
+            return;
+        }
+
+        if (p1_HP <= 0 && p2_HP <= 0)
+        {
+            GameOverManager.Instance.ShowGameOver("REMIS");
+            this.enabled = false;
+        }
+        else if (p1_HP <= 0)
+        {
+            Debug.Log("Zniszczono bazę Gracza 1!");
+            GameOverManager.Instance.ShowGameOver("Gracz 2");
+            this.enabled = false;
+        }
+        else if (p2_HP <= 0)
+        {
+            Debug.Log("Zniszczono bazę Gracza 2!");
+            GameOverManager.Instance.ShowGameOver("Gracz 1");
+            this.enabled = false;
+        }
+    }
+}
