@@ -39,10 +39,3 @@
     - `CameraController.cs` – Handles orthographic projection matrix clamping via `Mathf.Clamp`.
 
 ---
-
-## 📦 Installation & Setup
-
-1. Clone the repository to your local machine:
-    ```bash
-    git clone [https://github.com/YourUsername/animal-war-game.git](https://github.com/YourUsername/animal-war-game.git)
-    ```
